@@ -665,7 +665,7 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.7</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.8</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -763,6 +763,7 @@ let localThrowVisual=null;
 let lastSeenCaptureEvent=null;
 let lastSettledThrowVisual=null;
 let pieceAnimating=false;
+let lastSeenMoveEvent=null;
 
 /* v1.3
    - 최대 8명, 팀당 최대 4명
@@ -832,7 +833,14 @@ async function fetchSystemData(){
  if(currentRoomId){
   const room=globalData.rooms[currentRoomId];
   if(!room){currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return}
-  if(!pieceAnimating)renderRoomOrGame();
+  if(!pieceAnimating){
+   const evt=room.lastMoveEvent;
+   if(evt?.id&&evt.id!==lastSeenMoveEvent&&evt.by!==currentUser?.id&&Date.now()-(evt.time||0)<4000){
+    renderRoomOrGame();
+   }else{
+    renderRoomOrGame();
+   }
+  }
  }else renderLobby();
 }
 function startSync(){
@@ -1055,7 +1063,13 @@ async function startGame(){
  if(ps.length<2)return alert('2명 이상이어야 시작할 수 있어요.');
  if(!ps.some(p=>p.team==='red')||!ps.some(p=>p.team==='blue'))return alert('빨간팀과 파란팀이 모두 있어야 시작할 수 있어요.');
  for(const p of ps)await save(`${ROOM_PATH}/${currentRoomId}/players/${p.id}`,p);
- r.status='playing';r.turnIndex=0;r.order=buildTurnOrder(ps);r.lastThrow=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
+ r.status='playing';
+ const baseOrder=buildTurnOrder(ps);
+ const startTeam=Math.random()<0.5?'red':'blue';
+ const firstIdx=baseOrder.findIndex(id=>ps.find(p=>p.id===id)?.team===startTeam);
+ r.order=firstIdx>0?[...baseOrder.slice(firstIdx),...baseOrder.slice(0,firstIdx)]:baseOrder;
+ r.turnIndex=0;
+ r.startTeam=startTeam;r.lastThrow=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
  ps.forEach(p=>{r.playerTeams[p.id]=p.team;r.playerSlots[p.id]=p.teamSlot});
  r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;pieceAnimating=false;yutAnimating=false;
  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
@@ -1161,9 +1175,55 @@ function showCaptureEffect(eventData){
  setTimeout(()=>fx.remove(),1500);
 }
 
+
+
+function positionPieceAtEventSource(evt){
+ const layer=$('pieces-layer');
+ const el=layer?.querySelector(`.team-piece[data-team="${evt.team}"][data-gid="${CSS.escape(evt.gid)}"]`);
+ if(!el)return;
+ const route=ROUTES[evt.travelRoute]||[];
+ const node=route[evt.travelStartIdx];
+ if(node==null)return;
+ const p=POS[node];if(!p)return;
+ el.style.left=`${p[0]}%`;
+ el.style.top=`${p[1]}%`;
+ el.style.setProperty('transform','translate(-50%,-50%)','important');
+}
+
+async function playRemoteMoveEvent(evt,r){
+ if(!evt||!evt.id||evt.id===lastSeenMoveEvent||pieceAnimating)return;
+ if(evt.by===currentUser?.id){lastSeenMoveEvent=evt.id;return}
+ lastSeenMoveEvent=evt.id;
+ positionPieceAtEventSource(evt);
+
+ const team=evt.team,gid=evt.gid;
+ const layer=$('pieces-layer');
+ const el=layer?.querySelector(`.team-piece[data-team="${team}"][data-gid="${CSS.escape(gid)}"]`);
+ if(!el)return;
+
+ const opt={
+  travelRoute:evt.travelRoute,
+  travelStartIdx:evt.travelStartIdx,
+  travelEndIdx:evt.travelEndIdx,
+  finish:evt.finish
+ };
+ try{
+  await animatePieceTravel(team,gid,opt);
+ }catch(err){
+  console.error('상대방 말 이동 애니메이션 오류',err);
+  pieceAnimating=false;
+ }
+ pieceAnimating=false;
+ const fresh=globalData.rooms[currentRoomId];
+ if(fresh)renderGame(fresh);
+}
+
 function renderGame(r){
  drawBoard();$('btn-explode-game').classList.toggle('hidden',currentUser.id!==ADMIN_ID);renderChat(r.chat||[],'game-chat-msgs');
  if(r.lastGameEvent?.type==='capture')showCaptureEffect(r.lastGameEvent);
+ if(r.lastMoveEvent?.id&&r.lastMoveEvent.id!==lastSeenMoveEvent&&!pieceAnimating){
+  setTimeout(()=>playRemoteMoveEvent(r.lastMoveEvent,r),30);
+ }
  const order=r.order||[],turnId=order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId]||'red',meTurn=turnId===currentUser.id;
  $('red-roster').innerHTML=rosterHTML(r,'red',turnId);$('blue-roster').innerHTML=rosterHTML(r,'blue',turnId);
 
@@ -1219,7 +1279,7 @@ function renderSticks(backs){
  ];
  let html='<div class="yut-motion-shadow"></div><div class="throw-dust"></div>';
  for(let i=0;i<4;i++){
-  const flat=backs!=null&&i<backs;
+  const flat=(visual?.backFlags?.[i] ?? (backs!=null&&i<backs));
   const v=visual?.sticks?.[i]||{};
   const f=finals[i];
   const ex=v.ex??f.x,ey=v.ey??f.y,erot=v.erot??f.r,erx=v.erx??(flat?180:0),ery=v.ery??0;
@@ -1253,7 +1313,7 @@ async function animateYutThrow(backs,isNak,nakIndex,visual){
  // Build fresh four sticks close together in the hand/launch position.
  let html='<div class="yut-motion-shadow"></div><div class="throw-dust"></div>';
  for(let i=0;i<4;i++){
-  const flat=i<backs;
+  const flat=(visual?.backFlags?.[i] ?? (i<backs));
   html+=`<div class="yut-stick ${flat?'flat':''} motion-air" data-stick="${i}"></div>`;
  }
  box.innerHTML=html;
@@ -1416,6 +1476,8 @@ async function throwYut(){
  const isNak=Math.random()<0.025;
  const nakIndex=isNak?Math.floor(Math.random()*4):null;
  const backs=[0,1,2,3].filter(()=>Math.random()<.5).length;
+ const shuffled=[0,1,2,3].sort(()=>Math.random()-.5);
+ const backSet=new Set(shuffled.slice(0,backs));
 
  let name,steps;
  if(backs===1){name='도';steps=1}
@@ -1425,6 +1487,8 @@ async function throwYut(){
  else{name='모';steps=5}
 
  const visual={
+  backs,
+  backFlags:[0,1,2,3].map(i=>backSet.has(i)),
   sticks:[0,1,2,3].map((_,i)=>({
    sx:(i-1.5)*10+(Math.random()*6-3),
    srot:Math.random()*18-9,
@@ -1432,8 +1496,8 @@ async function throwYut(){
    ex:(i-1.5)*56+(Math.random()*16-8),
    ey:Math.random()*12-6,
    erot:Math.random()*60-30,
-   erx:(i<backs?180:0)+(Math.random()*10-5),
-   ery:Math.random()*18-9
+   erx:(backSet.has(i)?180:0),
+   ery:Math.random()*8-4
   }))
  };
 
@@ -1443,7 +1507,7 @@ async function throwYut(){
  await animateYutThrow(backs,isNak,nakIndex,visual);
 
  // Keep the four final sticks exactly where they landed.
- lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v}))};
+ lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v})),backFlags:[...visual.backFlags],backs:visual.backs};
  yutAnimating=false;
  $('throw-btn').classList.remove('animating');
 
@@ -1494,7 +1558,25 @@ async function commitMove(team,gid,moveId,optIndex){
 
  $('move-guide').textContent=`${move.name} ${move.steps}칸 이동 중...`;
 
- // The visible piece now travels node-by-node before the Firebase state changes.
+ const moveEvent={
+  id:`move-${Date.now()}-${Math.random()}`,
+  type:'move',
+  by:currentUser.id,
+  team,
+  gid,
+  moveName:move.name,
+  travelRoute:opt.travelRoute,
+  travelStartIdx:opt.travelStartIdx,
+  travelEndIdx:opt.travelEndIdx,
+  finish:!!opt.finish,
+  time:Date.now()
+ };
+ // 상대방 화면은 이 이벤트를 보고, 최종 위치가 저장되기 전에 동일한 경로 애니메이션을 재생한다.
+ await save(`${ROOM_PATH}/${currentRoomId}/lastMoveEvent`,moveEvent);
+ r.lastMoveEvent=moveEvent;
+ await new Promise(resolve=>setTimeout(resolve,120));
+
+ // 내 화면에서도 같은 경로를 한 칸씩 이동.
  try{
   await animatePieceTravel(team,gid,opt);
  }catch(err){
