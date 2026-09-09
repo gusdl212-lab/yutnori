@@ -482,12 +482,134 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
   100%{opacity:0}
 }
 
+
+/* ===== v1.6 : 윷 던지기 모션 충돌 수정 ===== */
+/* 평상시에는 떨어진 최종 위치를 유지하고, throwing 중에는 keyframes가 transform을 완전히 제어한다. */
+.yut-stick{
+  transform:
+    translate(var(--ex,0px),var(--ey,0px))
+    rotate(var(--erot,0deg))
+    rotateX(var(--erx,0deg))
+    rotateY(var(--ery,0deg));
+}
+.yut-sticks.throwing .yut-stick{
+  transform:none!important;
+  animation-name:realYutThrow3Dv16!important;
+  animation-duration:1.9s!important;
+  animation-timing-function:cubic-bezier(.16,.74,.24,1)!important;
+  animation-fill-mode:forwards!important;
+}
+@keyframes realYutThrow3Dv16{
+  0%{
+    transform:
+      translate(var(--sx,0px),28px)
+      rotate(var(--srot,0deg))
+      rotateX(0deg)
+      rotateY(0deg)
+      scale(.95);
+    filter:brightness(.9);
+  }
+  12%{
+    transform:
+      translate(calc(var(--sx,0px) * .6),-25px)
+      rotate(calc(var(--srot,0deg) + 70deg))
+      rotateX(110deg)
+      rotateY(60deg)
+      scale(1.02);
+  }
+  30%{
+    transform:
+      translate(var(--mx,0px),-118px)
+      rotate(calc(var(--srot,0deg) + 220deg))
+      rotateX(310deg)
+      rotateY(190deg)
+      scale(1.1);
+    filter:brightness(1.18);
+  }
+  46%{
+    transform:
+      translate(var(--mx2,0px),-145px)
+      rotate(calc(var(--srot,0deg) + 380deg))
+      rotateX(505deg)
+      rotateY(315deg)
+      scale(1.12);
+    filter:brightness(1.2);
+  }
+  63%{
+    transform:
+      translate(calc(var(--ex,0px) - 18px),-72px)
+      rotate(calc(var(--erot,0deg) + 165deg))
+      rotateX(calc(var(--erx,0deg) + 380deg))
+      rotateY(calc(var(--ery,0deg) + 235deg))
+      scale(1.06);
+  }
+  79%{
+    transform:
+      translate(var(--ex,0px),calc(var(--ey,0px) + 1px))
+      rotate(calc(var(--erot,0deg) - 13deg))
+      rotateX(calc(var(--erx,0deg) + 30deg))
+      rotateY(var(--ery,0deg))
+      scale(1);
+  }
+  88%{
+    transform:
+      translate(calc(var(--ex,0px) + 5px),calc(var(--ey,0px) - 16px))
+      rotate(calc(var(--erot,0deg) + 7deg))
+      rotateX(var(--erx,0deg))
+      rotateY(var(--ery,0deg))
+      scale(1.01);
+  }
+  95%{
+    transform:
+      translate(calc(var(--ex,0px) - 2px),calc(var(--ey,0px) - 4px))
+      rotate(calc(var(--erot,0deg) - 2deg))
+      rotateX(var(--erx,0deg))
+      rotateY(var(--ery,0deg))
+      scale(1);
+  }
+  100%{
+    transform:
+      translate(var(--ex,0px),var(--ey,0px))
+      rotate(var(--erot,0deg))
+      rotateX(var(--erx,0deg))
+      rotateY(var(--ery,0deg))
+      scale(1);
+    filter:brightness(1);
+  }
+}
+
+/* 낙도 같은 방식으로 실제로 판 밖으로 튀도록 keyframes 우선권을 부여 */
+.yut-sticks.throwing.nak .yut-stick.nak-stick{
+  animation-name:realYutNakV16!important;
+  animation-duration:1.95s!important;
+  animation-fill-mode:forwards!important;
+}
+@keyframes realYutNakV16{
+  0%{
+    transform:translate(var(--sx,0px),28px) rotate(0deg) rotateX(0deg) rotateY(0deg);
+    opacity:1;
+  }
+  28%{
+    transform:translate(28px,-128px) rotate(260deg) rotateX(300deg) rotateY(170deg);
+  }
+  55%{
+    transform:translate(112px,-88px) rotate(510deg) rotateX(520deg) rotateY(330deg);
+  }
+  78%{
+    transform:translate(188px,-18px) rotate(720deg) rotateX(650deg) rotateY(470deg);
+  }
+  100%{
+    transform:translate(245px,68px) rotate(900deg) rotateX(780deg) rotateY(560deg);
+    opacity:.9;
+  }
+}
+
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.5</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.6</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -583,6 +705,7 @@ let selectedGroup=null;
 let yutAnimating=false;
 let localThrowVisual=null;
 let lastSeenCaptureEvent=null;
+let lastSettledThrowVisual=null;
 
 /* v1.3
    - 최대 8명, 팀당 최대 4명
@@ -877,7 +1000,7 @@ async function startGame(){
  for(const p of ps)await save(`${ROOM_PATH}/${currentRoomId}/players/${p.id}`,p);
  r.status='playing';r.turnIndex=0;r.order=buildTurnOrder(ps);r.lastThrow=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
  ps.forEach(p=>{r.playerTeams[p.id]=p.team;r.playerSlots[p.id]=p.teamSlot});
- r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;
+ r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;
  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
 }
 
@@ -1021,7 +1144,7 @@ function renderGame(r){
 }
 function renderSticks(backs){
  const box=$('yut-sticks');
- const visual=localThrowVisual;
+ const visual=localThrowVisual || lastSettledThrowVisual;
  const finals=[
   {x:-82,y:2,r:-21},{x:-30,y:-5,r:9},{x:27,y:4,r:-12},{x:82,y:-2,r:18}
  ];
@@ -1043,8 +1166,8 @@ function renderSticks(backs){
     --delay:${v.delay??i*.035}s;"></div>`;
  }
  box.innerHTML=html;
- box.classList.toggle('throwing',!!visual?.throwing);
- box.classList.toggle('nak',visual?.nakIndex!=null);
+ box.classList.toggle('throwing',!!localThrowVisual?.throwing);
+ box.classList.toggle('nak',(localThrowVisual?.nakIndex!=null));
 }
 function selectTeamGroup(team,gid){selectedGroup={team,gid};const r=globalData.rooms[currentRoomId];if(r)renderGame(r)}
 
@@ -1092,8 +1215,13 @@ async function throwYut(){
  $('throw-result').classList.remove('nak-result');
  renderSticks(backs);
 
- await new Promise(resolve=>setTimeout(resolve,1870));
+ await new Promise(resolve=>setTimeout(resolve,2020));
 
+ lastSettledThrowVisual={
+  throwing:false,
+  nakIndex:null,
+  sticks:(localThrowVisual?.sticks||[]).map(v=>({...v}))
+ };
  localThrowVisual=null;
  yutAnimating=false;
  $('throw-btn').classList.remove('animating');
