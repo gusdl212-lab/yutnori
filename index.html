@@ -113,12 +113,79 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
 .team-label.red{background:#54252a;color:#ffb4b4;border:1px solid #9b3f47}
 .team-label.blue{background:#193a5b;color:#a9d4ff;border:1px solid #326d9f}
 
+
+/* ===== v1.3 : 팀 대기실 / 좌우 선수패널 / 우하단 출발 / 캐릭터 개선 ===== */
+.room-team-layout{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.team-wait-box{border-radius:14px;padding:12px;min-height:330px;background:#111822}
+.team-wait-box.red{border:2px solid #e35c64;box-shadow:inset 0 0 22px rgba(227,92,100,.08)}
+.team-wait-box.blue{border:2px solid #4d9ce8;box-shadow:inset 0 0 22px rgba(77,156,232,.08)}
+.team-wait-title{display:flex;align-items:center;justify-content:space-between;font-size:16px;font-weight:1000;margin-bottom:10px;padding-bottom:9px;border-bottom:1px solid #334155}
+.team-wait-box.red .team-wait-title{color:#ff9299}
+.team-wait-box.blue .team-wait-title{color:#8cc9ff}
+.team-slot{display:flex;align-items:center;gap:9px;min-height:58px;border-radius:10px;padding:7px 9px;margin-bottom:7px;background:#1d2733;border:1px solid #344253}
+.team-slot.me{box-shadow:0 0 0 2px #66fcf1}
+.team-slot.empty{opacity:.55;border-style:dashed}
+.mini-avatar{width:40px;height:44px;border-radius:50% 50% 44% 44%;display:grid;place-items:center;font-size:25px;border:2px solid #fff;position:relative;flex:0 0 auto;box-shadow:0 3px 7px rgba(0,0,0,.28)}
+.team-wait-box.red .mini-avatar{background:linear-gradient(#fff3f3,#ffd2d2);border-color:#ff898f}
+.team-wait-box.blue .mini-avatar{background:linear-gradient(#f2f8ff,#d1e7ff);border-color:#72b5f5}
+.team-slot-info{min-width:0;flex:1}
+.team-slot-id{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.team-slot-sub{font-size:10px;color:#95a3b7;margin-top:3px}
+.team-switch-bar{display:flex;justify-content:center;gap:9px;margin-top:14px;flex-wrap:wrap}
+.team-switch-bar button{min-width:150px}
+
+.battle-board-layout{display:grid;grid-template-columns:142px minmax(460px,1fr) 142px;gap:10px;align-items:start}
+.side-roster{display:flex;flex-direction:column;gap:9px;padding-top:8px}
+.side-roster-title{text-align:center;font-size:13px;font-weight:1000;padding:7px;border-radius:9px}
+.side-roster.red .side-roster-title{background:#51252a;color:#ff9aa1;border:1px solid #a84b52}
+.side-roster.blue .side-roster-title{background:#183c5f;color:#9ed1ff;border:1px solid #3479b5}
+.roster-player{position:relative;background:#1a2430;border:1px solid #344455;border-radius:11px;padding:8px 6px;text-align:center;min-height:100px;transition:.2s}
+.side-roster.red .roster-player{border-color:#6d353a}
+.side-roster.blue .roster-player{border-color:#285b87}
+.roster-player .portrait{width:54px;height:60px;margin:0 auto 5px;border-radius:50% 50% 45% 45%;display:grid;place-items:center;font-size:34px;position:relative;border:3px solid #fff;box-shadow:0 4px 9px rgba(0,0,0,.34)}
+.side-roster.red .portrait{background:linear-gradient(#fff7f7,#ffd1d1);border-color:#ff7f86}
+.side-roster.blue .portrait{background:linear-gradient(#f6fbff,#cde6ff);border-color:#65aff4}
+.portrait:after{content:'';position:absolute;bottom:-9px;left:50%;transform:translateX(-50%);width:36px;height:19px;border-radius:12px 12px 8px 8px;z-index:-1}
+.side-roster.red .portrait:after{background:#e8565e}
+.side-roster.blue .portrait:after{background:#3c91dd}
+.roster-id{font-size:11px;font-weight:1000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.roster-order{font-size:9px;color:#9aa8b9;margin-top:3px}
+.roster-player.current{border-color:#66fcf1!important;background:#203838;box-shadow:0 0 7px #66fcf1,0 0 18px rgba(102,252,241,.55);animation:turnGlow 1s infinite alternate}
+.roster-player.current:before{content:'현재 차례';position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:#66fcf1;color:#08201e;border-radius:8px;padding:2px 6px;font-size:8px;font-weight:1000;white-space:nowrap}
+@keyframes turnGlow{from{box-shadow:0 0 5px #66fcf1,0 0 10px rgba(102,252,241,.35)}to{box-shadow:0 0 10px #66fcf1,0 0 24px rgba(102,252,241,.72)}}
+
+.board-center-column{min-width:0}
+.board-wrap{width:min(100%,560px)}
+.board-title{font-size:24px}
+.yut-character{display:none}
+.move-marker{pointer-events:auto!important}
+.team-piece.selectable{pointer-events:auto!important}
+.pieces-layer{pointer-events:none}
+.pieces-layer .move-marker,.pieces-layer .team-piece.selectable{pointer-events:auto}
+
+.mal-avatar{font-family:"Apple Color Emoji","Segoe UI Emoji",sans-serif}
+.team-piece .mal-stack:before{content:'';position:absolute;left:50%;bottom:-2px;transform:translateX(-50%);width:42px;height:20px;border-radius:50%;background:rgba(0,0,0,.18);filter:blur(2px)}
+.team-piece.red .mal-avatar{box-shadow:0 3px 8px rgba(180,35,48,.38)}
+.team-piece.blue .mal-avatar{box-shadow:0 3px 8px rgba(35,100,180,.38)}
+
+@media(max-width:1050px){
+ .battle-board-layout{grid-template-columns:116px minmax(430px,1fr) 116px}
+ .roster-player{min-height:88px}.roster-player .portrait{width:46px;height:51px;font-size:29px}
+}
+@media(max-width:820px){
+ .battle-board-layout{grid-template-columns:1fr}
+ .side-roster{display:grid;grid-template-columns:repeat(4,1fr);padding-top:0}
+ .side-roster-title{grid-column:1/-1}
+ .roster-player{min-height:78px}
+ .room-team-layout{grid-template-columns:1fr}
+}
+
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.2</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.3</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -172,16 +239,27 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
 </div>
 
 <div id="view-game" class="card hidden">
- <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><strong style="color:#66fcf1">🎲 신나는 윷놀이 한 판!</strong><div style="display:flex;gap:6px"><button id="btn-explode-game" class="btn-purple hidden" onclick="explodeRoom()">💣 방 폭파</button><button class="btn-danger" onclick="leaveRoom()">나가기 🚪</button></div></div>
+ <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+  <strong style="color:#66fcf1">🎲 신나는 윷놀이 팀전!</strong>
+  <div style="display:flex;gap:6px"><button id="btn-explode-game" class="btn-purple hidden" onclick="explodeRoom()">💣 방 폭파</button><button class="btn-danger" onclick="leaveRoom()">나가기 🚪</button></div>
+ </div>
  <div class="game-layout">
   <div class="yut-stage">
-   <div id="player-strip" class="player-strip"></div>
-   <div id="board-wrap" class="board-wrap"><div class="board-title">우리 같이<br>윷~ 놀자!<small>YUT NORI</small></div><div id="lines-layer"></div><div id="nodes-layer"></div><div id="pieces-layer" class="pieces-layer"></div><div class="yut-character" id="mascot">🐰</div></div>
-   <div class="yut-controls">
-    <div id="turn-banner" class="turn-banner">게임 준비 중...</div>
-    <div class="throw-area"><div id="yut-sticks" class="yut-sticks"></div><div id="throw-result" class="throw-result">🪵</div><button id="throw-btn" class="btn-gold" onclick="throwYut()">윷 던지기!</button></div>
-    <div id="pending-rolls" class="pending-rolls"></div>
-    <div id="move-guide" class="legend">내 차례에 윷을 던지고 움직일 말을 선택하세요.</div>
+   <div class="battle-board-layout">
+    <div id="red-roster" class="side-roster red"></div>
+    <div class="board-center-column">
+     <div id="board-wrap" class="board-wrap">
+      <div class="board-title">신나는<br>윷놀이<small>RED vs BLUE</small></div>
+      <div id="lines-layer"></div><div id="nodes-layer"></div><div id="pieces-layer" class="pieces-layer"></div>
+     </div>
+     <div class="yut-controls">
+      <div id="turn-banner" class="turn-banner">게임 준비 중...</div>
+      <div class="throw-area"><div id="yut-sticks" class="yut-sticks"></div><div id="throw-result" class="throw-result">🪵</div><button id="throw-btn" class="btn-gold" onclick="throwYut()">윷 던지기!</button></div>
+      <div id="pending-rolls" class="pending-rolls"></div>
+      <div id="move-guide" class="legend">내 차례에 윷을 던지고 움직일 말을 선택하세요.</div>
+     </div>
+    </div>
+    <div id="blue-roster" class="side-roster blue"></div>
    </div>
   </div>
   <div class="game-chat-panel"><h3 style="margin-top:0;color:#66fcf1">💬 게임방 채팅</h3><div id="game-chat-msgs" class="game-chat-msgs"></div><div style="display:flex;gap:5px"><input id="game-chat-input" type="text" style="margin:0" placeholder="대화 입력" onkeypress="if(event.key==='Enter')sendGameChat()"><button class="btn-blue" onclick="sendGameChat()">전송</button></div></div>
@@ -196,36 +274,32 @@ const ADMIN_ID="andy212";
 const ONLINE_GRACE_MS=45000;
 const ONE_HOUR_MS=3600000;
 const MAX_PLAYERS=8;
+const TEAM_CAPACITY=4;
 
 let currentUser=null,currentRoomId=null,globalData={users:{},rooms:{},lobbyChat:[]},syncInterval=null,heartbeatInterval=null;
 let selectedGroup=null;
 
-/*
- v1.2
- 전통적인 사각 윷판을 기준으로 다시 구성.
- 출발/도착 = 좌하단, 진행방향 = 좌하단→우하단→우상단→좌상단→좌하단.
- 첫 모서리/둘째 모서리/중앙에 정확히 멈춘 경우 다음 이동에서 지름길 선택 가능.
- 윷·모는 추가 던지기, 상대 말을 잡으면 추가 던지기.
- 여러 번 던진 결과는 pendingMoves에 쌓이고, 말을 클릭하면 각 결과별 목적지가 점으로 표시됨.
+/* v1.3
+   - 최대 8명, 팀당 최대 4명
+   - 대기실에서 빨간팀/파란팀 자유 이동
+   - 턴: 빨강 1번 → 파랑 1번 → 빨강 2번 → 파랑 2번 ...
+   - 양 팀 공통 출발점: 오른쪽 아래
+   - 말 클릭 → 누적된 각 윷 결과별 목적지 점 → 점 클릭 이동
 */
 
 const POS={
-  0:[10,90],
-  1:[26,90],2:[42,90],3:[58,90],4:[74,90],5:[90,90],
-  6:[90,74],7:[90,58],8:[90,42],9:[90,26],10:[90,10],
-  11:[74,10],12:[58,10],13:[42,10],14:[26,10],15:[10,10],
-  16:[10,26],17:[10,42],18:[10,58],19:[10,74],20:[10,90],
-  21:[74,74],22:[62,62],23:[50,50],24:[38,38],25:[26,26],
-  26:[74,26],27:[62,38],28:[38,62],29:[26,74]
+  0:[90,90],
+  1:[74,90],2:[58,90],3:[42,90],4:[26,90],5:[10,90],
+  6:[10,74],7:[10,58],8:[10,42],9:[10,26],10:[10,10],
+  11:[26,10],12:[42,10],13:[58,10],14:[74,10],15:[90,10],
+  16:[90,26],17:[90,42],18:[90,58],19:[90,74],20:[90,90],
+  21:[26,74],22:[38,62],23:[50,50],24:[62,38],25:[74,26],
+  26:[26,26],27:[38,38],28:[62,62],29:[74,74]
 };
-
 const ROUTES={
   outer:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
-  // 첫 번째 모서리(우하단)에서 중앙을 지나 좌상단으로
   diagA:[5,21,22,23,24,25,15,16,17,18,19,20],
-  // 두 번째 모서리(우상단)에서 중앙을 지나 곧장 도착 방향으로
   diagB:[10,26,27,23,28,29,20],
-  // diagA로 중앙에 정확히 멈췄을 때 선택 가능한 중앙→도착 지름길
   centerFinish:[23,28,29,20]
 };
 
@@ -239,487 +313,389 @@ async function remove(path){try{await fetch(`${FIREBASE_BASE_URL}/${path}.json`,
 function switchView(id){['view-auth','view-lobby','view-room','view-game'].forEach(v=>$(v).classList.add('hidden'));$(id).classList.remove('hidden')}
 function switchAuthMode(m){['form-login','form-signup','form-forgot'].forEach(x=>$(x).classList.add('hidden'));$('form-'+m).classList.remove('hidden')}
 function displayName(id){return id===ADMIN_ID?'관리자':id}
-function teamOfSeat(seat){return seat%2===0?'red':'blue'}
-function teamKo(team){return team==='red'?'빨간팀':'파란팀'}
-function teamIcon(team){return team==='red'?'🔴':'🔵'}
-function teamChars(team){return team==='red'?RED_CHARS:BLUE_CHARS}
+function teamKo(t){return t==='red'?'빨간팀':'파란팀'}
+function teamIcon(t){return t==='red'?'🔴':'🔵'}
+function teamChars(t){return t==='red'?RED_CHARS:BLUE_CHARS}
 
 window.addEventListener('DOMContentLoaded',async()=>{
-  const saved=localStorage.getItem('omok_remembered_id');
-  if(saved){$('login-id').value=saved;$('chk-remember').checked=true}
-  const auto=localStorage.getItem('omok_autologin_enabled')==='true';
-  $('chk-autologin').checked=auto;
-  if(auto){
-    const sid=localStorage.getItem('omok_session_user');
-    if(sid){
-      await fetchSystemData();
-      const u=globalData.users[sid];
-      if(u){currentUser=u;afterLogin();return}
-    }
-  }
-  switchView('view-auth');
+ const saved=localStorage.getItem('omok_remembered_id');
+ if(saved){$('login-id').value=saved;$('chk-remember').checked=true}
+ const auto=localStorage.getItem('omok_autologin_enabled')==='true';$('chk-autologin').checked=auto;
+ if(auto){
+  const sid=localStorage.getItem('omok_session_user');
+  if(sid){await fetchSystemData();const u=globalData.users[sid];if(u){currentUser=u;afterLogin();return}}
+ }
+ switchView('view-auth');
 });
 
 async function fetchSystemData(){
-  try{
-    const r=await fetch(`${FIREBASE_BASE_URL}.json`);
-    if(r.ok){
-      const d=await r.json()||{};
-      globalData.users=d.users||{};
-      globalData.rooms=d[ROOM_PATH]||{};
-      globalData.lobbyChat=d.lobbyChat||[];
-    }
-  }catch(e){console.error(e)}
-  if(!globalData.users[ADMIN_ID])globalData.users[ADMIN_ID]={id:ADMIN_ID,pw:"tmdgus12!@",email:"admin@korea.kr",lastActive:0};
-  if(!currentUser)return;
-  if(globalData.users[currentUser.id])currentUser=globalData.users[currentUser.id];
-  if(currentRoomId){
-    const room=globalData.rooms[currentRoomId];
-    if(!room){
-      currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');
-      switchView('view-lobby');renderLobby();return;
-    }
-    renderRoomOrGame();
-  }else renderLobby();
+ try{
+  const r=await fetch(`${FIREBASE_BASE_URL}.json`);
+  if(r.ok){
+   const d=await r.json()||{};
+   globalData.users=d.users||{};
+   globalData.rooms=d[ROOM_PATH]||{};
+   globalData.lobbyChat=d.lobbyChat||[];
+  }
+ }catch(e){console.error("Firebase 오류",e)}
+ if(!globalData.users[ADMIN_ID])globalData.users[ADMIN_ID]={id:ADMIN_ID,pw:"tmdgus12!@",email:"admin@korea.kr",lastActive:0};
+ if(!currentUser)return;
+ if(globalData.users[currentUser.id])currentUser=globalData.users[currentUser.id];
+ if(currentRoomId){
+  const room=globalData.rooms[currentRoomId];
+  if(!room){currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return}
+  renderRoomOrGame();
+ }else renderLobby();
 }
 function startSync(){
-  clearInterval(syncInterval);clearInterval(heartbeatInterval);
-  syncInterval=setInterval(fetchSystemData,1400);
-  heartbeatInterval=setInterval(()=>currentUser&&save(`users/${currentUser.id}/lastActive`,Date.now()),3000);
-  save(`users/${currentUser.id}/lastActive`,Date.now());fetchSystemData();
+ clearInterval(syncInterval);clearInterval(heartbeatInterval);
+ syncInterval=setInterval(fetchSystemData,1400);
+ heartbeatInterval=setInterval(()=>currentUser&&save(`users/${currentUser.id}/lastActive`,Date.now()),3000);
+ save(`users/${currentUser.id}/lastActive`,Date.now());fetchSystemData();
 }
 async function handleSignup(){
-  const id=$('signup-id').value.trim(),pw=$('signup-pw').value.trim(),pw2=$('signup-pw-confirm').value.trim(),email=$('signup-email').value.trim();
-  if(!id)return alert('아이디를 입력해주세요.');
-  if(!pw||pw!==pw2)return alert('비밀번호가 일치하지 않습니다.');
-  if(!email.endsWith('@korea.kr'))return alert('이메일은 @korea.kr 형식이어야 합니다.');
-  if(id===ADMIN_ID)return alert('사용할 수 없는 아이디입니다.');
-  await fetchSystemData();
-  if(globalData.users[id])return alert('이미 존재하는 아이디입니다.');
-  if(Object.values(globalData.users).some(u=>u.email===email))return alert('이미 사용 중인 이메일입니다.');
-  const u={id,pw,email,joinedAt:Date.now(),lastActive:0};
-  if(await save('users/'+id,u)){alert('회원가입 완료! 기존 게임에서도 같은 계정을 사용할 수 있어요.');switchAuthMode('login')}
+ const id=$('signup-id').value.trim(),pw=$('signup-pw').value.trim(),pw2=$('signup-pw-confirm').value.trim(),email=$('signup-email').value.trim();
+ if(!id)return alert('아이디를 입력해주세요.');
+ if(!pw||pw!==pw2)return alert('비밀번호가 일치하지 않습니다.');
+ if(!email.endsWith('@korea.kr'))return alert('이메일은 @korea.kr 형식이어야 합니다.');
+ if(id===ADMIN_ID)return alert('사용할 수 없는 아이디입니다.');
+ await fetchSystemData();
+ if(globalData.users[id])return alert('이미 존재하는 아이디입니다.');
+ if(Object.values(globalData.users).some(u=>u.email===email))return alert('이미 사용 중인 이메일입니다.');
+ const u={id,pw,email,joinedAt:Date.now(),lastActive:0};
+ if(await save('users/'+id,u)){alert('회원가입 완료! 기존 게임에서도 같은 계정을 사용할 수 있어요.');switchAuthMode('login')}
 }
 async function handleLogin(){
-  await fetchSystemData();
-  const id=$('login-id').value.trim(),pw=$('login-pw').value.trim();
-  let u=globalData.users[id];
-  if(!u&&id===ADMIN_ID&&pw==="tmdgus12!@"){u={id:ADMIN_ID,pw:"tmdgus12!@",email:"admin@korea.kr",lastActive:Date.now()};await save('users/'+ADMIN_ID,u)}
-  if(!u||u.pw!==pw)return alert('아이디 또는 비밀번호가 올바르지 않습니다.');
-  if($('chk-remember').checked)localStorage.setItem('omok_remembered_id',id);else localStorage.removeItem('omok_remembered_id');
-  if($('chk-autologin').checked)localStorage.setItem('omok_autologin_enabled','true');else localStorage.removeItem('omok_autologin_enabled');
-  localStorage.setItem('omok_session_user',id);currentUser=u;afterLogin();
+ await fetchSystemData();
+ const id=$('login-id').value.trim(),pw=$('login-pw').value.trim();let u=globalData.users[id];
+ if(!u&&id===ADMIN_ID&&pw==="tmdgus12!@"){u={id:ADMIN_ID,pw:"tmdgus12!@",email:"admin@korea.kr",lastActive:Date.now()};await save('users/'+ADMIN_ID,u)}
+ if(!u||u.pw!==pw)return alert('아이디 또는 비밀번호가 올바르지 않습니다.');
+ if($('chk-remember').checked)localStorage.setItem('omok_remembered_id',id);else localStorage.removeItem('omok_remembered_id');
+ if($('chk-autologin').checked)localStorage.setItem('omok_autologin_enabled','true');else localStorage.removeItem('omok_autologin_enabled');
+ localStorage.setItem('omok_session_user',id);currentUser=u;afterLogin();
 }
 function afterLogin(){$('my-profile-name').textContent=displayName(currentUser.id);switchView('view-lobby');startSync()}
 async function handlePasswordReset(){
-  await fetchSystemData();
-  const id=$('forgot-id').value.trim(),email=$('forgot-email').value.trim(),pw=$('forgot-newpw').value.trim(),u=globalData.users[id];
-  if(!id||!email||!pw)return alert('모든 항목을 입력해주세요.');
-  if(id===ADMIN_ID)return alert('관리자 비밀번호는 변경할 수 없습니다.');
-  if(!u||u.email!==email)return alert('가입 정보가 일치하지 않습니다.');
-  u.pw=pw;await save('users/'+id,u);alert('비밀번호가 변경되었습니다.');switchAuthMode('login');
+ await fetchSystemData();
+ const id=$('forgot-id').value.trim(),email=$('forgot-email').value.trim(),pw=$('forgot-newpw').value.trim(),u=globalData.users[id];
+ if(!id||!email||!pw)return alert('모든 항목을 입력해주세요.');
+ if(id===ADMIN_ID)return alert('관리자 비밀번호는 변경할 수 없습니다.');
+ if(!u||u.email!==email)return alert('가입 정보가 일치하지 않습니다.');
+ u.pw=pw;await save('users/'+id,u);alert('비밀번호가 변경되었습니다.');switchAuthMode('login');
 }
 async function handleLogout(){
-  if(currentUser)await save(`users/${currentUser.id}/lastActive`,0);
-  localStorage.removeItem('omok_autologin_enabled');localStorage.removeItem('omok_session_user');localStorage.removeItem('yutnori_session_room');
-  clearInterval(syncInterval);clearInterval(heartbeatInterval);
-  currentUser=null;currentRoomId=null;selectedGroup=null;switchView('view-auth');
+ if(currentUser)await save(`users/${currentUser.id}/lastActive`,0);
+ localStorage.removeItem('omok_autologin_enabled');localStorage.removeItem('omok_session_user');localStorage.removeItem('yutnori_session_room');
+ clearInterval(syncInterval);clearInterval(heartbeatInterval);
+ currentUser=null;currentRoomId=null;selectedGroup=null;switchView('view-auth');
 }
 
 function renderGameMenu(){
-  $('left-panel-title').textContent='🎮 게임 목록';
-  $('left-panel-content').innerHTML=`<div class="game-menu">
-  <a class="game-menu-item" href="https://gusdl212-lab.github.io/my-web/"><span class="game-icon">⚫⚪</span><span class="game-name">오목</span></a>
-  <a class="game-menu-item" href="https://gusdl212-lab.github.io/othello-game/"><span class="game-icon">⚫⚪</span><span class="game-name">오셀로</span></a>
-  <a class="game-menu-item" href="https://gusdl212-lab.github.io/chess/"><span class="game-icon">♟️</span><span class="game-name">체스</span></a>
-  <a class="game-menu-item" href="https://gusdl212-lab.github.io/janggi/"><span class="game-icon">🀄</span><span class="game-name">장기</span></a>
-  <div class="game-menu-divider"></div><div class="game-section-label">🎮 보드게임</div>
-  <a class="game-menu-item sub" href="https://gusdl212-lab.github.io/party-game/"><span class="game-icon">🎮</span><span class="game-name">보드게임 라운지</span></a>
-  <a class="game-menu-item sub current" href="#"><span class="game-icon">🪵</span><span class="game-name">윷놀이</span><span class="current-badge">현재</span></a>
-  </div>`;
+ $('left-panel-title').textContent='🎮 게임 목록';
+ $('left-panel-content').innerHTML=`<div class="game-menu">
+ <a class="game-menu-item" href="https://gusdl212-lab.github.io/my-web/"><span class="game-icon">⚫⚪</span><span class="game-name">오목</span></a>
+ <a class="game-menu-item" href="https://gusdl212-lab.github.io/othello-game/"><span class="game-icon">⚫⚪</span><span class="game-name">오셀로</span></a>
+ <a class="game-menu-item" href="https://gusdl212-lab.github.io/chess/"><span class="game-icon">♟️</span><span class="game-name">체스</span></a>
+ <a class="game-menu-item" href="https://gusdl212-lab.github.io/janggi/"><span class="game-icon">🀄</span><span class="game-name">장기</span></a>
+ <div class="game-menu-divider"></div><div class="game-section-label">🎮 보드게임</div>
+ <a class="game-menu-item sub" href="https://gusdl212-lab.github.io/party-game/"><span class="game-icon">🎮</span><span class="game-name">보드게임 라운지</span></a>
+ <a class="game-menu-item sub current" href="#"><span class="game-icon">🪵</span><span class="game-name">윷놀이</span><span class="current-badge">현재</span></a>
+ </div>`;
 }
 function renderAdminList(){
-  $('left-panel-title').textContent='👑 회원 관리';
-  const users=Object.values(globalData.users||{}).filter(u=>u&&u.id).sort((a,b)=>(b.lastActive||0)-(a.lastActive||0));
-  $('left-panel-content').innerHTML=users.map(u=>`<div class="user-item"><span>${u.id===ADMIN_ID?'👑 ':''}${esc(displayName(u.id))}</span>${u.id!==ADMIN_ID?`<button class="btn-danger" style="padding:3px 7px;font-size:10px" onclick="deleteUserAccount('${esc(u.id)}')">탈퇴</button>`:''}</div>`).join('');
+ $('left-panel-title').textContent='👑 회원 관리';
+ const users=Object.values(globalData.users||{}).filter(u=>u&&u.id).sort((a,b)=>(b.lastActive||0)-(a.lastActive||0));
+ $('left-panel-content').innerHTML=users.map(u=>`<div class="user-item"><span>${u.id===ADMIN_ID?'👑 ':''}${esc(displayName(u.id))}</span>${u.id!==ADMIN_ID?`<button class="btn-danger" style="padding:3px 7px;font-size:10px" onclick="deleteUserAccount('${esc(u.id)}')">탈퇴</button>`:''}</div>`).join('');
 }
 function renderLobby(){
-  if(!currentUser)return;
-  currentUser.id===ADMIN_ID?renderAdminList():renderGameMenu();
-  const now=Date.now(),online=Object.values(globalData.users||{}).filter(u=>u&&u.id&&now-(u.lastActive||0)<ONLINE_GRACE_MS);
-  $('online-count').textContent=online.length;
-  $('online-user-list').innerHTML=online.map(u=>`<div class="user-item"><span>${u.id===ADMIN_ID?'👑 ':''}${esc(displayName(u.id))}</span><span style="color:#66fcf1;font-size:10px">접속중</span></div>`).join('');
-  const chats=(globalData.lobbyChat||[]).filter(m=>now-(m.time||0)<ONE_HOUR_MS).slice(-30);
-  $('lobby-chat-msgs').innerHTML=chats.map(m=>`<div class="chat-msg"><span class="sender">${esc(displayName(m.sender))}:</span> ${esc(m.text)}</div>`).join('');
-  const rooms=globalData.rooms||{},ids=Object.keys(rooms);
-  $('room-list-box').innerHTML=ids.length?ids.map(id=>{
-    const r=rooms[id],cnt=Object.keys(r.players||{}).length;
-    return `<div class="room-item"><div><strong>${esc(id)}</strong><br><span style="font-size:10px;color:#aaa">${r.status==='playing'?'게임 중':'대기 중'} · ${cnt}/${MAX_PLAYERS}명 · 🔴 vs 🔵</span></div><div style="display:flex;gap:5px"><button class="btn-main" style="padding:5px 9px" onclick="joinRoom('${esc(id)}')">입장</button>${currentUser.id===ADMIN_ID?`<button class="btn-purple" style="padding:5px 8px" onclick="explodeRoom('${esc(id)}')">💣</button>`:''}</div></div>`
-  }).join(''):'<div style="text-align:center;color:#888;padding:25px">개설된 방이 없습니다.<br>첫 팀전 방을 만들어보세요! 🐰</div>';
+ if(!currentUser)return;
+ currentUser.id===ADMIN_ID?renderAdminList():renderGameMenu();
+ const now=Date.now(),online=Object.values(globalData.users||{}).filter(u=>u&&u.id&&now-(u.lastActive||0)<ONLINE_GRACE_MS);
+ $('online-count').textContent=online.length;
+ $('online-user-list').innerHTML=online.map(u=>`<div class="user-item"><span>${u.id===ADMIN_ID?'👑 ':''}${esc(displayName(u.id))}</span><span style="color:#66fcf1;font-size:10px">접속중</span></div>`).join('');
+ const chats=(globalData.lobbyChat||[]).filter(m=>now-(m.time||0)<ONE_HOUR_MS).slice(-30);
+ $('lobby-chat-msgs').innerHTML=chats.map(m=>`<div class="chat-msg"><span class="sender">${esc(displayName(m.sender))}:</span> ${esc(m.text)}</div>`).join('');
+ const rooms=globalData.rooms||{},ids=Object.keys(rooms);
+ $('room-list-box').innerHTML=ids.length?ids.map(id=>{
+  const r=rooms[id],cnt=Object.keys(r.players||{}).length;
+  return `<div class="room-item"><div><strong>${esc(id)}</strong><br><span style="font-size:10px;color:#aaa">${r.status==='playing'?'게임 중':'대기 중'} · ${cnt}/${MAX_PLAYERS}명 · 🔴 vs 🔵</span></div><div style="display:flex;gap:5px"><button class="btn-main" style="padding:5px 9px" onclick="joinRoom('${esc(id)}')">입장</button>${currentUser.id===ADMIN_ID?`<button class="btn-purple" style="padding:5px 8px" onclick="explodeRoom('${esc(id)}')">💣</button>`:''}</div></div>`;
+ }).join(''):'<div style="text-align:center;color:#888;padding:25px">개설된 방이 없습니다.<br>첫 팀전 방을 만들어보세요!</div>';
 }
 async function deleteUserAccount(id){if(currentUser.id!==ADMIN_ID||id===ADMIN_ID)return;if(confirm(`'${id}' 계정을 삭제할까요?`)){await remove('users/'+id);fetchSystemData()}}
 async function sendLobbyChat(){const i=$('lobby-chat-input'),t=i.value.trim();if(!t)return;i.value='';const arr=globalData.lobbyChat||[];arr.push({sender:currentUser.id,text:t,time:Date.now()});await save('lobbyChat',arr.slice(-100));fetchSystemData()}
 
+function normalizedPlayers(r){
+ const arr=Object.values(r.players||{}).filter(Boolean).sort((a,b)=>(a.joinedAt||a.seat||0)-(b.joinedAt||b.seat||0));
+ const used={red:new Set(),blue:new Set()};
+ for(const p of arr){
+  let team=p.team;
+  if(team!=='red'&&team!=='blue')team=((p.seat||0)%2===0?'red':'blue');
+  let slot=Number.isInteger(p.teamSlot)?p.teamSlot:null;
+  if(slot===null||slot<0||slot>=TEAM_CAPACITY||used[team].has(slot)){
+   slot=[0,1,2,3].find(s=>!used[team].has(s));
+   if(slot===undefined){
+    team=team==='red'?'blue':'red';
+    slot=[0,1,2,3].find(s=>!used[team].has(s));
+   }
+  }
+  p.team=team;p.teamSlot=slot;used[team].add(slot);
+ }
+ return arr;
+}
+function firstFreeSlot(players,team){
+ const used=new Set(players.filter(p=>p.team===team).map(p=>p.teamSlot));
+ return [0,1,2,3].find(s=>!used.has(s));
+}
 async function createRoom(){
-  let name=prompt('윷놀이 팀전 방 이름을 입력하세요:',currentUser.id===ADMIN_ID?'관리자의 윷놀이방':`${currentUser.id}의 윷놀이방`);
-  if(!name)return;
-  await fetchSystemData();
-  if(globalData.rooms[name])return alert('이미 존재하는 방입니다.');
-  const room={hostId:currentUser.id,status:'waiting',createdAt:Date.now(),players:{[currentUser.id]:{id:currentUser.id,seat:0}},chat:[]};
-  await save(`${ROOM_PATH}/${name}`,room);currentRoomId=name;localStorage.setItem('yutnori_session_room',name);fetchSystemData();
+ let name=prompt('윷놀이 팀전 방 이름을 입력하세요:',currentUser.id===ADMIN_ID?'관리자의 윷놀이방':`${currentUser.id}의 윷놀이방`);
+ if(!name)return;
+ await fetchSystemData();if(globalData.rooms[name])return alert('이미 존재하는 방입니다.');
+ const room={hostId:currentUser.id,status:'waiting',createdAt:Date.now(),players:{[currentUser.id]:{id:currentUser.id,team:'red',teamSlot:0,joinedAt:Date.now()}},chat:[]};
+ await save(`${ROOM_PATH}/${name}`,room);currentRoomId=name;localStorage.setItem('yutnori_session_room',name);fetchSystemData();
 }
 async function joinRoom(id){
-  await fetchSystemData();
-  const r=globalData.rooms[id];if(!r)return alert('방이 없습니다.');if(!r.players)r.players={};
-  if(!r.players[currentUser.id]){
-    if(Object.keys(r.players).length>=MAX_PLAYERS)return alert(`최대 ${MAX_PLAYERS}명까지 참가할 수 있어요.`);
-    const used=Object.values(r.players).map(p=>p.seat);
-    const seat=[0,1,2,3,4,5,6,7].find(x=>!used.includes(x));
-    r.players[currentUser.id]={id:currentUser.id,seat};
-    await save(`${ROOM_PATH}/${id}/players/${currentUser.id}`,r.players[currentUser.id]);
-  }
-  currentRoomId=id;localStorage.setItem('yutnori_session_room',id);fetchSystemData();
+ await fetchSystemData();
+ const r=globalData.rooms[id];if(!r)return alert('방이 없습니다.');if(!r.players)r.players={};
+ if(!r.players[currentUser.id]){
+  const players=normalizedPlayers(r);
+  if(players.length>=MAX_PLAYERS)return alert(`최대 ${MAX_PLAYERS}명까지 참가할 수 있어요.`);
+  const redCount=players.filter(p=>p.team==='red').length,blueCount=players.filter(p=>p.team==='blue').length;
+  const team=redCount<=blueCount?'red':'blue',slot=firstFreeSlot(players,team);
+  r.players[currentUser.id]={id:currentUser.id,team,teamSlot:slot,joinedAt:Date.now()};
+  await save(`${ROOM_PATH}/${id}/players/${currentUser.id}`,r.players[currentUser.id]);
+ }
+ currentRoomId=id;localStorage.setItem('yutnori_session_room',id);fetchSystemData();
+}
+async function switchTeam(targetTeam){
+ if(!currentRoomId||!['red','blue'].includes(targetTeam))return;
+ await fetchSystemData();
+ const r=globalData.rooms[currentRoomId];if(!r||r.status!=='waiting')return;
+ const players=normalizedPlayers(r),me=players.find(p=>p.id===currentUser.id);if(!me)return;
+ if(me.team===targetTeam)return;
+ const slot=firstFreeSlot(players,targetTeam);
+ if(slot===undefined)return alert(`${teamKo(targetTeam)}은 이미 4명이 가득 찼어요.`);
+ me.team=targetTeam;me.teamSlot=slot;
+ await save(`${ROOM_PATH}/${currentRoomId}/players/${currentUser.id}`,me);fetchSystemData();
 }
 async function leaveRoom(){
-  if(!currentRoomId)return;
-  const id=currentRoomId;await fetchSystemData();const r=globalData.rooms[id];
-  if(r&&r.players){
-    delete r.players[currentUser.id];
-    const left=Object.values(r.players);
-    if(!left.length)await remove(`${ROOM_PATH}/${id}`);
-    else{if(r.hostId===currentUser.id)r.hostId=left[0].id;await save(`${ROOM_PATH}/${id}`,r)}
-  }
-  currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');fetchSystemData();
+ if(!currentRoomId)return;
+ const id=currentRoomId;await fetchSystemData();const r=globalData.rooms[id];
+ if(r&&r.players){
+  delete r.players[currentUser.id];
+  const left=Object.values(r.players).filter(Boolean);
+  if(!left.length)await remove(`${ROOM_PATH}/${id}`);
+  else{if(r.hostId===currentUser.id)r.hostId=left[0].id;await save(`${ROOM_PATH}/${id}`,r)}
+ }
+ currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');fetchSystemData();
 }
 async function explodeRoom(id){if(currentUser.id!==ADMIN_ID)return;id=id||currentRoomId;if(id&&confirm(`'${id}' 방을 폭파할까요?`)){await remove(`${ROOM_PATH}/${id}`);if(currentRoomId===id){currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby')}fetchSystemData()}}
 
-function renderRoomOrGame(){
-  const r=globalData.rooms[currentRoomId];if(!r)return;
-  if(r.status==='playing'||r.status==='ended'){switchView('view-game');renderGame(r)}
-  else{switchView('view-room');renderRoom(r)}
+function renderRoomOrGame(){const r=globalData.rooms[currentRoomId];if(!r)return;if(r.status==='playing'||r.status==='ended'){switchView('view-game');renderGame(r)}else{switchView('view-room');renderRoom(r)}}
+function teamSlotHTML(players,team,slot){
+ const p=players.find(x=>x.team===team&&x.teamSlot===slot),chars=teamChars(team);
+ if(!p)return `<div class="team-slot empty"><div class="mini-avatar">${chars[slot]}</div><div class="team-slot-info"><div class="team-slot-id">${slot+1}번 자리</div><div class="team-slot-sub">참가자 대기 중</div></div></div>`;
+ return `<div class="team-slot ${p.id===currentUser.id?'me':''}"><div class="mini-avatar">${chars[slot]}</div><div class="team-slot-info"><div class="team-slot-id">${p.id===rHostId?'👑 ':''}${esc(displayName(p.id))}</div><div class="team-slot-sub">${slot+1}번째 선수 · ${teamKo(team)}</div></div></div>`;
 }
+let rHostId='';
 function renderRoom(r){
-  $('display-room-id').textContent=currentRoomId;
-  $('btn-explode-room').classList.toggle('hidden',currentUser.id!==ADMIN_ID);
-  const ps=Object.values(r.players||{}).sort((a,b)=>a.seat-b.seat);
-  $('room-player-grid').innerHTML=[0,1,2,3,4,5,6,7].map(seat=>{
-    const p=ps.find(x=>x.seat===seat),team=teamOfSeat(seat);
-    return `<div class="player-slot ${p&&p.id===currentUser.id?'me':''}">
-      <strong>${teamIcon(team)} ${p?esc(displayName(p.id)):'빈 자리'}</strong>
-      <div class="team-label ${team}">${teamIcon(team)} ${teamKo(team)}</div>
-      <div style="font-size:11px;color:#aaa;margin-top:7px">${p?(p.id===r.hostId?'👑 방장':'🎲 참가자'):'대기 중...'}</div>
-    </div>`;
-  }).join('');
-  const teams=new Set(ps.map(p=>teamOfSeat(p.seat)));
-  $('host-controls').classList.toggle('hidden',currentUser.id!==r.hostId||ps.length<2||teams.size<2);
-  renderChat(r.chat||[],'room-chat-msgs');
+ $('display-room-id').textContent=currentRoomId;$('btn-explode-room').classList.toggle('hidden',currentUser.id!==ADMIN_ID);
+ const ps=normalizedPlayers(r);rHostId=r.hostId;
+ $('room-player-grid').innerHTML=`
+  <div class="room-team-layout" style="grid-column:1/-1">
+   <div class="team-wait-box red">
+    <div class="team-wait-title"><span>🔴 빨간팀</span><span>${ps.filter(p=>p.team==='red').length}/4</span></div>
+    ${[0,1,2,3].map(s=>teamSlotHTML(ps,'red',s)).join('')}
+   </div>
+   <div class="team-wait-box blue">
+    <div class="team-wait-title"><span>🔵 파란팀</span><span>${ps.filter(p=>p.team==='blue').length}/4</span></div>
+    ${[0,1,2,3].map(s=>teamSlotHTML(ps,'blue',s)).join('')}
+   </div>
+  </div>
+  <div class="team-switch-bar" style="grid-column:1/-1">
+   <button class="btn-red" onclick="switchTeam('red')">🔴 빨간팀으로 이동</button>
+   <button class="btn-blue" onclick="switchTeam('blue')">🔵 파란팀으로 이동</button>
+  </div>`;
+ const hasRed=ps.some(p=>p.team==='red'),hasBlue=ps.some(p=>p.team==='blue');
+ $('host-controls').classList.toggle('hidden',currentUser.id!==r.hostId||ps.length<2||!hasRed||!hasBlue);
+ renderChat(r.chat||[],'room-chat-msgs');
 }
 function renderChat(arr,id){$(id).innerHTML=arr.slice(-40).map(m=>`<div class="chat-msg"><span class="sender">${esc(displayName(m.sender))}:</span> ${esc(m.text)}</div>`).join('');$(id).scrollTop=$(id).scrollHeight}
 async function sendRoomChat(){return sendGameLikeChat('room-chat-input')}
 async function sendGameChat(){return sendGameLikeChat('game-chat-input')}
 async function sendGameLikeChat(inputId){
-  const i=$(inputId),t=i.value.trim();if(!t||!currentRoomId)return;i.value='';
-  await fetchSystemData();const r=globalData.rooms[currentRoomId];if(!r)return;
-  r.chat=r.chat||[];r.chat.push({sender:currentUser.id,text:t,time:Date.now()});
-  await save(`${ROOM_PATH}/${currentRoomId}/chat`,r.chat.slice(-100));fetchSystemData();
+ const i=$(inputId),t=i.value.trim();if(!t||!currentRoomId)return;i.value='';
+ await fetchSystemData();const r=globalData.rooms[currentRoomId];if(!r)return;
+ r.chat=r.chat||[];r.chat.push({sender:currentUser.id,text:t,time:Date.now()});
+ await save(`${ROOM_PATH}/${currentRoomId}/chat`,r.chat.slice(-100));fetchSystemData();
 }
 
-function newTeam(team){
-  return {finished:0,groups:[0,1,2,3].map(i=>({gid:`${team}-${i}`,members:[i],route:'home',idx:0}))};
+function newTeam(team){return {finished:0,groups:[0,1,2,3].map(i=>({gid:`${team}-${i}`,members:[i],route:'home',idx:0}))}}
+function buildTurnOrder(players){
+ const order=[];
+ for(let slot=0;slot<TEAM_CAPACITY;slot++){
+  const rp=players.find(p=>p.team==='red'&&p.teamSlot===slot);if(rp)order.push(rp.id);
+  const bp=players.find(p=>p.team==='blue'&&p.teamSlot===slot);if(bp)order.push(bp.id);
+ }
+ return order;
 }
 async function startGame(){
-  await fetchSystemData();
-  const r=globalData.rooms[currentRoomId];if(!r||r.hostId!==currentUser.id)return;
-  const ps=Object.values(r.players||{}).sort((a,b)=>a.seat-b.seat);
-  if(ps.length<2)return alert('2명 이상이어야 시작할 수 있어요.');
-  if(new Set(ps.map(p=>teamOfSeat(p.seat))).size<2)return alert('빨간팀과 파란팀이 모두 있어야 시작할 수 있어요.');
-  r.status='playing';r.turnIndex=0;r.order=ps.map(p=>p.id);r.lastThrow=null;r.winnerTeam=null;
-  r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};
-  ps.forEach(p=>r.playerTeams[p.id]=teamOfSeat(p.seat));
-  r.teams={red:newTeam('red'),blue:newTeam('blue')};
-  selectedGroup=null;
-  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
+ await fetchSystemData();
+ const r=globalData.rooms[currentRoomId];if(!r||r.hostId!==currentUser.id)return;
+ const ps=normalizedPlayers(r);
+ if(ps.length<2)return alert('2명 이상이어야 시작할 수 있어요.');
+ if(!ps.some(p=>p.team==='red')||!ps.some(p=>p.team==='blue'))return alert('빨간팀과 파란팀이 모두 있어야 시작할 수 있어요.');
+ for(const p of ps)await save(`${ROOM_PATH}/${currentRoomId}/players/${p.id}`,p);
+ r.status='playing';r.turnIndex=0;r.order=buildTurnOrder(ps);r.lastThrow=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
+ ps.forEach(p=>{r.playerTeams[p.id]=p.team;r.playerSlots[p.id]=p.teamSlot});
+ r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;
+ await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
 }
 
 function drawBoard(){
-  const nl=$('nodes-layer'),ll=$('lines-layer');
-  if(nl.dataset.v==='12')return;
-  nl.dataset.v='12';
-  const nodes=[...new Set([...ROUTES.outer,...ROUTES.diagA,...ROUTES.diagB])];
-  nl.innerHTML=nodes.map(n=>{
-    const [x,y]=POS[n],cls=[0,5,10,15,20].includes(n)?'corner':n===23?'center':'';
-    let label='';
-    if(n===0||n===20)label='출발';
-    if(n===23)label='★';
-    return `<div class="node ${cls}" style="left:${x}%;top:${y}%">${label}</div>`;
-  }).join('');
-  const edges=[],seen=new Set();
-  function add(route){
-    for(let i=0;i<route.length-1;i++){
-      const a=route[i],b=route[i+1],key=`${Math.min(a,b)}-${Math.max(a,b)}`;
-      if(!seen.has(key)){seen.add(key);edges.push([a,b])}
-    }
-  }
-  add(ROUTES.outer);add(ROUTES.diagA);add(ROUTES.diagB);
-  ll.innerHTML=edges.map(([a,b])=>{
-    const [x1,y1]=POS[a],[x2,y2]=POS[b],dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ang=Math.atan2(dy,dx)*180/Math.PI;
-    return `<div class="path-line" style="left:${x1}%;top:${y1}%;width:${len}%;transform:rotate(${ang}deg)"></div>`;
-  }).join('');
+ const nl=$('nodes-layer'),ll=$('lines-layer');if(nl.dataset.v==='13')return;nl.dataset.v='13';
+ const nodes=[...new Set([...ROUTES.outer,...ROUTES.diagA,...ROUTES.diagB])];
+ nl.innerHTML=nodes.map(n=>{
+  const [x,y]=POS[n],cls=[0,5,10,15,20].includes(n)?'corner':n===23?'center':'';
+  return `<div class="node ${cls}" style="left:${x}%;top:${y}%">${(n===0||n===20)?'출발':n===23?'中':''}</div>`;
+ }).join('');
+ const edges=[],seen=new Set();
+ function add(route){for(let i=0;i<route.length-1;i++){const a=route[i],b=route[i+1],key=`${Math.min(a,b)}-${Math.max(a,b)}`;if(!seen.has(key)){seen.add(key);edges.push([a,b])}}}
+ add(ROUTES.outer);add(ROUTES.diagA);add(ROUTES.diagB);
+ ll.innerHTML=edges.map(([a,b])=>{const [x1,y1]=POS[a],[x2,y2]=POS[b],dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy),ang=Math.atan2(dy,dx)*180/Math.PI;return `<div class="path-line" style="left:${x1}%;top:${y1}%;width:${len}%;transform:rotate(${ang}deg)"></div>`}).join('');
 }
-
-function getNode(g){
-  if(!g||g.route==='home'||g.route==='finished')return null;
-  return ROUTES[g.route]?.[g.idx]??null;
-}
+function getNode(g){if(!g||g.route==='home'||g.route==='finished')return null;return ROUTES[g.route]?.[g.idx]??null}
 function branchBases(g){
-  if(g.route==='home')return [{route:'outer',idx:0,label:'바깥길'}];
-  const node=getNode(g);
-  const bases=[{route:g.route,idx:g.idx,label:'계속'}];
-  if(g.route==='outer'&&node===5)bases.push({route:'diagA',idx:0,label:'지름길'});
-  if(g.route==='outer'&&node===10)bases.push({route:'diagB',idx:0,label:'지름길'});
-  if(g.route==='diagA'&&node===23)bases.push({route:'centerFinish',idx:0,label:'도착 지름길'});
-  return bases;
+ if(g.route==='home')return [{route:'outer',idx:0,label:'출발'}];
+ const node=getNode(g),bases=[{route:g.route,idx:g.idx,label:'계속'}];
+ if(g.route==='outer'&&node===5)bases.push({route:'diagA',idx:0,label:'지름길'});
+ if(g.route==='outer'&&node===10)bases.push({route:'diagB',idx:0,label:'지름길'});
+ if(g.route==='diagA'&&node===23)bases.push({route:'centerFinish',idx:0,label:'지름길'});
+ return bases;
 }
 function movementOptions(g,move){
-  const options=[];
-  for(const base of branchBases(g)){
-    const route=ROUTES[base.route],next=base.idx+move.steps;
-    if(next>=route.length){
-      options.push({route:'finished',idx:route.length-1,node:null,finish:true,branchLabel:base.label});
-    }else{
-      options.push({route:base.route,idx:next,node:route[next],finish:false,branchLabel:base.label});
-    }
-  }
-  const unique=[];
-  const seen=new Set();
-  for(const o of options){
-    const key=o.finish?'FIN':`${o.route}-${o.idx}`;
-    if(!seen.has(key)){seen.add(key);unique.push(o)}
-  }
-  return unique;
+ const out=[];
+ for(const b of branchBases(g)){
+  const route=ROUTES[b.route],next=b.idx+move.steps;
+  if(next>=route.length)out.push({route:'finished',idx:route.length-1,node:null,finish:true,branchLabel:b.label});
+  else out.push({route:b.route,idx:next,node:route[next],finish:false,branchLabel:b.label});
+ }
+ const seen=new Set(),uniq=[];
+ for(const o of out){const k=o.finish?'FIN':`${o.route}-${o.idx}`;if(!seen.has(k)){seen.add(k);uniq.push(o)}}
+ return uniq;
 }
 function resetCapturedGroup(teamObj,index){
-  const g=teamObj.groups[index],members=[...g.members];
-  teamObj.groups.splice(index,1);
-  members.forEach(m=>teamObj.groups.push({gid:`reset-${Date.now()}-${m}-${Math.random()}`,members:[m],route:'home',idx:0}));
+ const g=teamObj.groups[index],members=[...g.members];teamObj.groups.splice(index,1);
+ members.forEach(m=>teamObj.groups.push({gid:`reset-${Date.now()}-${m}-${Math.random()}`,members:[m],route:'home',idx:0}));
 }
 function mergeOwnGroups(teamObj,moving){
-  const node=getNode(moving);if(node==null)return false;
-  let merged=false;
-  for(let i=teamObj.groups.length-1;i>=0;i--){
-    const other=teamObj.groups[i];
-    if(other===moving||other.route==='home'||other.route==='finished')continue;
-    if(getNode(other)===node){
-      moving.members=[...moving.members,...other.members].sort((a,b)=>a-b);
-      teamObj.groups.splice(i,1);merged=true;
-    }
-  }
-  return merged;
+ const node=getNode(moving);if(node==null)return false;let merged=false;
+ for(let i=teamObj.groups.length-1;i>=0;i--){const other=teamObj.groups[i];if(other===moving||other.route==='home'||other.route==='finished')continue;if(getNode(other)===node){moving.members=[...moving.members,...other.members].sort((a,b)=>a-b);teamObj.groups.splice(i,1);merged=true}}
+ return merged;
 }
 function captureOpponents(r,team,moving){
-  const node=getNode(moving);if(node==null)return false;
-  const otherTeam=team==='red'?'blue':'red',obj=r.teams[otherTeam];
-  let captured=false;
-  for(let i=obj.groups.length-1;i>=0;i--){
-    const g=obj.groups[i];
-    if(g.route!=='home'&&g.route!=='finished'&&getNode(g)===node){
-      resetCapturedGroup(obj,i);captured=true;
-    }
-  }
-  return captured;
+ const node=getNode(moving);if(node==null)return false;const other=team==='red'?'blue':'red',obj=r.teams[other];let captured=false;
+ for(let i=obj.groups.length-1;i>=0;i--){const g=obj.groups[i];if(g.route!=='home'&&g.route!=='finished'&&getNode(g)===node){resetCapturedGroup(obj,i);captured=true}}
+ return captured;
 }
 function destinationType(r,team,opt){
-  if(opt.finish)return 'finish';
-  const node=opt.node;
-  const own=(r.teams[team]?.groups||[]).some(g=>g.route!=='home'&&g.route!=='finished'&&getNode(g)===node);
-  const other=team==='red'?'blue':'red';
-  const enemy=(r.teams[other]?.groups||[]).some(g=>g.route!=='home'&&g.route!=='finished'&&getNode(g)===node);
-  if(enemy)return 'capture';
-  if(own)return 'stack';
-  return '';
+ if(opt.finish)return 'finish';
+ const own=(r.teams[team]?.groups||[]).some(g=>g.route!=='home'&&g.route!=='finished'&&getNode(g)===opt.node);
+ const other=team==='red'?'blue':'red';
+ const enemy=(r.teams[other]?.groups||[]).some(g=>g.route!=='home'&&g.route!=='finished'&&getNode(g)===opt.node);
+ return enemy?'capture':own?'stack':'';
 }
-function groupCharacters(team,members){
-  const chars=teamChars(team);
-  return members.map(m=>`<span class="mal-avatar">${chars[m]||'🐾'}</span>`).join('');
-}
-function pendingRollsHTML(r){
-  const ms=r.pendingMoves||[];
-  if(!ms.length)return '';
-  return ms.map(m=>`<span class="roll-chip ${m.name==='윷'||m.name==='모'?'yutmo':''}">${m.name} ${m.steps}</span>`).join('');
+function groupCharacters(team,members){const chars=teamChars(team);return members.map(m=>`<span class="mal-avatar">${chars[m]||'🐾'}</span>`).join('')}
+function pendingRollsHTML(r){return (r.pendingMoves||[]).map(m=>`<span class="roll-chip ${m.name==='윷'||m.name==='모'?'yutmo':''}">${m.name} ${m.steps}</span>`).join('')}
+function rosterHTML(r,team,turnId){
+ const players=(r.order||[]).filter(id=>r.playerTeams?.[id]===team).sort((a,b)=>(r.playerSlots?.[a]??0)-(r.playerSlots?.[b]??0));
+ const chars=teamChars(team);
+ return `<div class="side-roster-title">${teamIcon(team)} ${teamKo(team)}</div>`+[0,1,2,3].map(slot=>{
+  const id=players.find(pid=>(r.playerSlots?.[pid]??0)===slot);
+  if(!id)return `<div class="roster-player" style="opacity:.28"><div class="portrait">${chars[slot]}</div><div class="roster-id">빈 자리</div><div class="roster-order">${slot+1}번째 선수</div></div>`;
+  const orderNo=(r.order||[]).indexOf(id)+1;
+  return `<div class="roster-player ${id===turnId?'current':''}"><div class="portrait">${chars[slot]}</div><div class="roster-id">${esc(displayName(id))}</div><div class="roster-order">전체 ${orderNo}번째 차례</div></div>`;
+ }).join('');
 }
 
 function renderGame(r){
-  drawBoard();
-  $('btn-explode-game').classList.toggle('hidden',currentUser.id!==ADMIN_ID);
-  renderChat(r.chat||[],'game-chat-msgs');
+ drawBoard();$('btn-explode-game').classList.toggle('hidden',currentUser.id!==ADMIN_ID);renderChat(r.chat||[],'game-chat-msgs');
+ const order=r.order||[],turnId=order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId]||'red',meTurn=turnId===currentUser.id;
+ $('red-roster').innerHTML=rosterHTML(r,'red',turnId);$('blue-roster').innerHTML=rosterHTML(r,'blue',turnId);
 
-  const order=r.order||[],turnId=order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId]||'red',meTurn=turnId===currentUser.id;
-  const redDone=r.teams?.red?.finished||0,blueDone=r.teams?.blue?.finished||0;
-  const redPlayers=order.filter(id=>r.playerTeams?.[id]==='red');
-  const bluePlayers=order.filter(id=>r.playerTeams?.[id]==='blue');
+ $('turn-banner').textContent=r.status==='ended'?`🏆 ${teamIcon(r.winnerTeam)} ${teamKo(r.winnerTeam)} 승리!`:`${teamIcon(turnTeam)} ${displayName(turnId)}님의 차례`;
+ const canThrow=meTurn&&r.status==='playing'&&(r.throwCredits||0)>0;
+ $('throw-btn').disabled=!canThrow;$('throw-btn').style.opacity=canThrow?'1':'.45';
+ const result=r.lastThrow;$('throw-result').textContent=result?`${result.name} +${result.steps}`:'🪵';renderSticks(result?.backs);
+ $('pending-rolls').innerHTML=pendingRollsHTML(r);
 
-  $('player-strip').innerHTML=
-    `<div class="player-chip" style="grid-column:span 2;border-color:#b94a52"><b>🔴 빨간팀</b><br>${redPlayers.map(displayName).map(esc).join(' · ')}<br>완주 ${redDone}/4</div>
-     <div class="player-chip" style="grid-column:span 2;border-color:#397eb5"><b>🔵 파란팀</b><br>${bluePlayers.map(displayName).map(esc).join(' · ')}<br>완주 ${blueDone}/4</div>`;
-
-  $('turn-banner').textContent=r.status==='ended'
-    ?`🏆 ${teamIcon(r.winnerTeam)} ${teamKo(r.winnerTeam)} 승리! 🎉`
-    :`${teamIcon(turnTeam)} ${displayName(turnId)}님의 차례`;
-
-  $('mascot').textContent=turnTeam==='red'?'🐰':'🐶';
-
-  // Extra throws are consumed before movement, so accumulated results can all be shown as destinations.
-  const canThrow=meTurn&&r.status==='playing'&&(r.throwCredits||0)>0;
-  $('throw-btn').disabled=!canThrow;
-  $('throw-btn').style.opacity=canThrow?'1':'.45';
-
-  const result=r.lastThrow;
-  $('throw-result').textContent=result?`${result.name} +${result.steps}`:'🪵';
-  renderSticks(result?.backs);
-  $('pending-rolls').innerHTML=pendingRollsHTML(r);
-
-  const layer=$('pieces-layer');
-  let pieces='',markers='';
-
-  ['red','blue'].forEach(team=>{
-    const groups=r.teams?.[team]?.groups||[];
-    groups.forEach(g=>{
-      if(g.route==='finished')return;
-      const home=g.route==='home',node=getNode(g),base=home?POS[0]:POS[node]||POS[0];
-      const homeIndex=home?(g.members[0]||0):0;
-      const hx=home?[-6,-2,2,6][homeIndex]:0,hy=home?[-7,-2,3,8][homeIndex]:0;
-      const selectable=meTurn&&turnTeam===team&&(r.throwCredits||0)===0&&(r.pendingMoves||[]).length>0;
-      pieces+=`<div class="team-piece ${team} ${selectable?'selectable':''}" style="left:calc(${base[0]}% + ${hx}px);top:calc(${base[1]}% + ${hy}px)" ${selectable?`onclick="selectTeamGroup('${team}','${g.gid}')"`:''}>
-        <div class="mal-stack">${groupCharacters(team,g.members)}${g.members.length>1?`<span class="stack-badge">업기 ×${g.members.length}</span>`:''}<span class="team-ribbon">${teamIcon(team)} 말</span></div>
-      </div>`;
-    });
+ const layer=$('pieces-layer');let pieces='',markers='';
+ ['red','blue'].forEach(team=>{
+  const groups=r.teams?.[team]?.groups||[];
+  groups.forEach(g=>{
+   if(g.route==='finished')return;
+   const home=g.route==='home',node=getNode(g),base=home?POS[0]:POS[node]||POS[0],homeIndex=home?(g.members[0]||0):0;
+   const dx=home?[-22,-7,8,23][homeIndex]:0,dy=home?[18,5,-8,-21][homeIndex]:0;
+   const selectable=meTurn&&turnTeam===team&&(r.throwCredits||0)===0&&(r.pendingMoves||[]).length>0;
+   pieces+=`<div class="team-piece ${team} ${selectable?'selectable':''}" style="left:calc(${base[0]}% + ${dx}px);top:calc(${base[1]}% + ${dy}px)" ${selectable?`onclick="event.stopPropagation();selectTeamGroup('${team}','${g.gid}')"`:''}><div class="mal-stack">${groupCharacters(team,g.members)}${g.members.length>1?`<span class="stack-badge">×${g.members.length}</span>`:''}<span class="team-ribbon">${teamIcon(team)}</span></div></div>`;
   });
+ });
 
-  if(selectedGroup&&selectedGroup.team===turnTeam&&meTurn&&(r.throwCredits||0)===0){
-    const teamObj=r.teams?.[selectedGroup.team],g=teamObj?.groups.find(x=>x.gid===selectedGroup.gid);
-    if(g){
-      const moves=r.pendingMoves||[];
-      moves.forEach((move,mi)=>{
-        const opts=movementOptions(g,move);
-        opts.forEach((opt,oi)=>{
-          let x,y;
-          if(opt.finish){[x,y]=[5,84]}
-          else [x,y]=POS[opt.node];
-          // Offset markers if multiple choices land on the same visual point.
-          const dx=(oi-(opts.length-1)/2)*15;
-          const type=destinationType(r,selectedGroup.team,opt);
-          markers+=`<div class="move-marker ${type}" style="left:calc(${x}% + ${dx}px);top:${y}%" onclick="commitMove('${selectedGroup.team}','${g.gid}','${move.id}',${oi})">
-            ${move.name}<span class="marker-label">${type==='capture'?'잡기 · ':type==='stack'?'업기 · ':type==='finish'?'완주 · ':''}${move.name}${opts.length>1?' · '+opt.branchLabel:''}</span>
-          </div>`;
-        });
-      });
-    }else selectedGroup=null;
+ if(selectedGroup&&meTurn&&selectedGroup.team===turnTeam&&(r.throwCredits||0)===0){
+  const teamObj=r.teams?.[selectedGroup.team],g=teamObj?.groups.find(x=>x.gid===selectedGroup.gid);
+  if(g){
+   (r.pendingMoves||[]).forEach(move=>{
+    const opts=movementOptions(g,move);
+    opts.forEach((opt,oi)=>{
+     const [x,y]=opt.finish?[94,83]:POS[opt.node],type=destinationType(r,selectedGroup.team,opt);
+     const spread=(oi-(opts.length-1)/2)*18;
+     markers+=`<div class="move-marker ${type}" style="left:calc(${x}% + ${spread}px);top:${y}%" onclick="event.stopPropagation();commitMove('${selectedGroup.team}','${g.gid}','${move.id}',${oi})">${move.name}<span class="marker-label">${type==='capture'?'잡기 · ':type==='stack'?'업기 · ':type==='finish'?'완주 · ':''}${move.name}${opts.length>1?' · '+opt.branchLabel:''}</span></div>`;
+    });
+   });
   }
+ }
+ layer.innerHTML=pieces+markers;
 
-  layer.innerHTML=pieces+markers;
+ if(r.status==='ended')$('move-guide').textContent=`${teamIcon(r.winnerTeam)} ${teamKo(r.winnerTeam)} 승리!`;
+ else if(!meTurn)$('move-guide').textContent=`${displayName(turnId)}님의 차례입니다.`;
+ else if((r.throwCredits||0)>0)$('move-guide').textContent=(r.pendingMoves||[]).length?'추가 던지기가 있어요. 윷을 먼저 더 던져주세요.':'윷을 던져주세요!';
+ else if((r.pendingMoves||[]).length)$('move-guide').textContent=selectedGroup?'밝게 표시된 목적지 점을 눌러 이동하세요.':'움직일 캐릭터 말을 눌러주세요.';
+ else $('move-guide').textContent='다음 차례로 넘어가는 중...';
+}
+function renderSticks(backs){$('yut-sticks').innerHTML=[0,1,2,3].map((_,i)=>`<div class="yut-stick ${backs!=null&&i<backs?'flat':''}" style="--r:${[-8,5,-3,9][i]}deg"></div>`).join('')}
+function selectTeamGroup(team,gid){selectedGroup={team,gid};const r=globalData.rooms[currentRoomId];if(r)renderGame(r)}
 
-  if(r.status==='ended'){
-    $('move-guide').textContent=`${teamIcon(r.winnerTeam)} ${teamKo(r.winnerTeam)}이 말 4개를 모두 완주했습니다!`;
-  }else if(!meTurn){
-    $('move-guide').textContent=`${displayName(turnId)}님의 차례를 기다리는 중...`;
-  }else if((r.throwCredits||0)>0){
-    $('move-guide').textContent=(r.pendingMoves||[]).length
-      ?`추가 던지기가 있어요. 먼저 윷을 던지면 결과가 계속 쌓입니다.`
-      :`윷을 던져주세요!`;
-  }else if((r.pendingMoves||[]).length){
-    $('move-guide').textContent=selectedGroup
-      ?`밝게 표시된 목적지 점을 눌러 이동하세요. 여러 결과가 있으면 결과별 목적지가 모두 표시됩니다.`
-      :`움직일 ${teamKo(turnTeam)} 캐릭터 말을 먼저 눌러주세요.`;
-  }else{
-    $('move-guide').textContent='차례를 정리하는 중...';
-  }
-}
-
-function renderSticks(backs){
-  $('yut-sticks').innerHTML=[0,1,2,3].map((_,i)=>`<div class="yut-stick ${backs!=null&&i<backs?'flat':''}" style="--r:${[-8,5,-3,9][i]}deg"></div>`).join('');
-}
-function selectTeamGroup(team,gid){
-  selectedGroup={team,gid};
-  const r=globalData.rooms[currentRoomId];
-  if(r)renderGame(r);
-}
 async function throwYut(){
-  await fetchSystemData();
-  const r=globalData.rooms[currentRoomId];
-  if(!r||r.status!=='playing')return;
-  const turnId=r.order[r.turnIndex||0];
-  if(turnId!==currentUser.id||(r.throwCredits||0)<=0)return;
-
-  r.throwCredits=(r.throwCredits||0)-1;
-
-  const backs=[0,1,2,3].filter(()=>Math.random()<.5).length;
-  let name,steps;
-  if(backs===1){name='도';steps=1}
-  else if(backs===2){name='개';steps=2}
-  else if(backs===3){name='걸';steps=3}
-  else if(backs===4){name='윷';steps=4}
-  else{name='모';steps=5}
-
-  const move={id:`m-${Date.now()}-${Math.random()}`,name,steps,backs};
-  r.pendingMoves=r.pendingMoves||[];
-  r.pendingMoves.push(move);
-  r.lastThrow={name,steps,backs,time:Date.now()};
-
-  if(name==='윷'||name==='모')r.throwCredits=(r.throwCredits||0)+1;
-
-  selectedGroup=null;
-  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
+ await fetchSystemData();const r=globalData.rooms[currentRoomId];
+ if(!r||r.status!=='playing')return;
+ const turnId=r.order[r.turnIndex||0];if(turnId!==currentUser.id||(r.throwCredits||0)<=0)return;
+ r.throwCredits=(r.throwCredits||0)-1;
+ const backs=[0,1,2,3].filter(()=>Math.random()<.5).length;
+ let name,steps;
+ if(backs===1){name='도';steps=1}else if(backs===2){name='개';steps=2}else if(backs===3){name='걸';steps=3}else if(backs===4){name='윷';steps=4}else{name='모';steps=5}
+ const move={id:`m-${Date.now()}-${Math.random()}`,name,steps,backs};
+ r.pendingMoves=r.pendingMoves||[];r.pendingMoves.push(move);r.lastThrow={name,steps,backs,time:Date.now()};
+ if(name==='윷'||name==='모')r.throwCredits=(r.throwCredits||0)+1;
+ selectedGroup=null;await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
 }
-
 async function commitMove(team,gid,moveId,optIndex){
-  await fetchSystemData();
-  const r=globalData.rooms[currentRoomId];
-  if(!r||r.status!=='playing'||(r.throwCredits||0)>0)return;
-
-  const turnId=r.order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId];
-  if(turnId!==currentUser.id||team!==turnTeam)return;
-
-  const moveIndex=(r.pendingMoves||[]).findIndex(m=>m.id===moveId);
-  if(moveIndex<0)return;
-  const move=r.pendingMoves[moveIndex];
-
-  const teamObj=r.teams[team],gi=teamObj.groups.findIndex(g=>g.gid===gid);
-  if(gi<0)return;
-  const g=teamObj.groups[gi];
-
-  const opts=movementOptions(g,move),opt=opts[optIndex];
-  if(!opt)return;
-
-  const count=g.members.length;
-  g.route=opt.route;g.idx=opt.idx;
-
-  let captured=false;
-  if(opt.finish){
-    teamObj.finished=(teamObj.finished||0)+count;
-    teamObj.groups.splice(gi,1);
-  }else{
-    captured=captureOpponents(r,team,g);
-    mergeOwnGroups(teamObj,g);
-  }
-
-  r.pendingMoves.splice(moveIndex,1);
-  selectedGroup=null;
-
-  if((teamObj.finished||0)>=4){
-    r.status='ended';r.winnerTeam=team;r.pendingMoves=[];r.throwCredits=0;r.lastThrow=null;
-  }else{
-    // Capture grants another throw, except when this very move was 윷/모:
-    // the bonus from 윷/모 has already been consumed before movement.
-    if(captured&&move.name!=='윷'&&move.name!=='모')r.throwCredits=(r.throwCredits||0)+1;
-
-    if((r.throwCredits||0)===0&&(r.pendingMoves||[]).length===0){
-      r.turnIndex=(r.turnIndex+1)%r.order.length;
-      r.throwCredits=1;
-      r.lastThrow=null;
-    }
-  }
-
-  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
+ await fetchSystemData();const r=globalData.rooms[currentRoomId];
+ if(!r||r.status!=='playing'||(r.throwCredits||0)>0)return;
+ const turnId=r.order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId];
+ if(turnId!==currentUser.id||team!==turnTeam)return;
+ const moveIndex=(r.pendingMoves||[]).findIndex(m=>m.id===moveId);if(moveIndex<0)return;
+ const move=r.pendingMoves[moveIndex],teamObj=r.teams[team],gi=teamObj.groups.findIndex(g=>g.gid===gid);if(gi<0)return;
+ const g=teamObj.groups[gi],opts=movementOptions(g,move),opt=opts[optIndex];if(!opt)return;
+ const count=g.members.length;g.route=opt.route;g.idx=opt.idx;
+ let captured=false;
+ if(opt.finish){teamObj.finished=(teamObj.finished||0)+count;teamObj.groups.splice(gi,1)}
+ else{captured=captureOpponents(r,team,g);mergeOwnGroups(teamObj,g)}
+ r.pendingMoves.splice(moveIndex,1);selectedGroup=null;
+ if((teamObj.finished||0)>=4){r.status='ended';r.winnerTeam=team;r.pendingMoves=[];r.throwCredits=0;r.lastThrow=null}
+ else{
+  if(captured&&move.name!=='윷'&&move.name!=='모')r.throwCredits=(r.throwCredits||0)+1;
+  if((r.throwCredits||0)===0&&(r.pendingMoves||[]).length===0){r.turnIndex=(r.turnIndex+1)%r.order.length;r.throwCredits=1;r.lastThrow=null}
+ }
+ await save(`${ROOM_PATH}/${currentRoomId}`,r);await fetchSystemData();
 }
 </script>
 </body>
