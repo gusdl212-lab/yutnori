@@ -660,12 +660,44 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
 }
 @keyframes trailFade{to{opacity:0;transform:translate(-50%,-50%) scale(.2)}}
 
+
+/* ===== v1.9 : 게임 연출/모션 폴리싱 (게임 규칙 변경 없음) ===== */
+.roster-player.current{overflow:visible}
+.roster-player.current:after{content:'';position:absolute;inset:-2px;border-radius:12px;background:linear-gradient(115deg,transparent 15%,rgba(255,255,255,.28) 40%,transparent 64%);background-size:220% 100%;pointer-events:none;animation:currentPlayerShine 2.3s linear infinite}
+@keyframes currentPlayerShine{from{background-position:180% 0}to{background-position:-80% 0}}
+.move-marker{isolation:isolate}
+.move-marker:before{content:'';position:absolute;inset:-9px;border-radius:50%;border:2px solid currentColor;opacity:.45;animation:destinationRipple 1.15s ease-out infinite;pointer-events:none}
+@keyframes destinationRipple{0%{transform:scale(.55);opacity:.7}100%{transform:scale(1.35);opacity:0}}
+.move-marker:hover{transform:translate(-50%,-50%) scale(1.17)!important;filter:brightness(1.12)}
+.team-piece.selectable .mal-stack{animation:selectableMal 1.15s ease-in-out infinite}
+@keyframes selectableMal{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-5px) scale(1.045)}}
+.team-piece.step-land .mal-stack{animation:stepLand .24s cubic-bezier(.18,.8,.25,1)}
+@keyframes stepLand{0%{transform:translateY(-12px) scale(1.07)}60%{transform:translateY(3px) scale(.96,1.05)}100%{transform:translateY(0) scale(1)}}
+.yut-motion-shadow{transition:opacity .08s linear,transform .08s linear}
+.yut-sticks.impact{animation:trayImpact .28s ease-out}
+@keyframes trayImpact{0%{transform:scale(1)}35%{transform:scale(.985)}70%{transform:scale(1.008)}100%{transform:scale(1)}}
+.turn-transition-fx{position:fixed;inset:0;z-index:8500;pointer-events:none;display:grid;place-items:center}
+.turn-transition-card{min-width:270px;padding:18px 30px;border-radius:22px;text-align:center;background:rgba(12,19,27,.92);border:2px solid #66fcf1;box-shadow:0 0 35px rgba(102,252,241,.32);backdrop-filter:blur(8px);animation:turnCardFx .95s ease-out forwards}
+.turn-transition-card .turn-team{font-size:14px;font-weight:900;color:#a8b8c8;margin-bottom:4px}.turn-transition-card .turn-name{font-size:27px;font-weight:1000;color:#66fcf1}.turn-transition-card .turn-caption{margin-top:5px;font-size:11px;color:#d5dee8}
+@keyframes turnCardFx{0%{opacity:0;transform:translateY(25px) scale(.83)}25%{opacity:1;transform:translateY(0) scale(1.05)}68%{opacity:1;transform:scale(1)}100%{opacity:0;transform:translateY(-15px) scale(.96)}}
+.start-team-fx{position:fixed;inset:0;z-index:9000;pointer-events:none;display:grid;place-items:center;background:rgba(0,0,0,.18);animation:startBackdrop 1.8s forwards}
+.start-team-box{width:min(82vw,430px);padding:24px;border-radius:24px;text-align:center;background:rgba(13,20,29,.96);border:2px solid #ffd166;box-shadow:0 0 60px rgba(255,209,102,.3);animation:startBox 1.8s cubic-bezier(.19,.78,.23,1) forwards}
+.start-team-label{font-size:13px;color:#b7c4d2;font-weight:900;letter-spacing:2px}.start-team-main{font-size:38px;font-weight:1000;margin:7px 0}.start-team-main.red{color:#ff8088;text-shadow:0 0 18px rgba(255,80,90,.6)}.start-team-main.blue{color:#72bcff;text-shadow:0 0 18px rgba(75,160,255,.6)}.start-team-sub{font-size:12px;color:#e6edf4}
+@keyframes startBackdrop{0%,70%{opacity:1}100%{opacity:0}}@keyframes startBox{0%{opacity:0;transform:scale(.55) rotate(-4deg)}22%{opacity:1;transform:scale(1.08) rotate(2deg)}45%,72%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(.88) translateY(-22px)}}
+.result-pop{animation:resultPop .48s cubic-bezier(.2,.86,.24,1)}@keyframes resultPop{0%{transform:scale(.55);opacity:.3}55%{transform:scale(1.25);opacity:1}100%{transform:scale(1)}}
+body.capture-shake .container{animation:captureShake .34s ease-out}@keyframes captureShake{0%,100%{transform:translateX(0)}18%{transform:translateX(-5px)}36%{transform:translateX(6px)}55%{transform:translateX(-4px)}72%{transform:translateX(3px)}}
+.win-fx{position:fixed;inset:0;z-index:10000;pointer-events:none;overflow:hidden;display:grid;place-items:center;background:radial-gradient(circle,rgba(255,214,102,.14),transparent 48%)}
+.win-card{position:relative;z-index:4;min-width:320px;padding:25px 35px;text-align:center;border-radius:24px;background:rgba(12,19,27,.95);border:2px solid #ffd166;box-shadow:0 0 50px rgba(255,209,102,.4);animation:winCard 3.3s forwards}.win-title{font-size:41px;font-weight:1000;color:#ffd166;text-shadow:0 0 20px rgba(255,209,102,.55)}.win-team{font-size:23px;font-weight:1000;margin-top:6px}
+.confetti-piece{position:absolute;top:-30px;width:10px;height:18px;border-radius:2px;background:hsl(var(--h),80%,62%);left:var(--x);transform:rotate(var(--r));animation:confettiFall var(--d) linear var(--delay) forwards}@keyframes confettiFall{to{transform:translate(var(--drift),110vh) rotate(760deg)}}@keyframes winCard{0%{opacity:0;transform:scale(.4)}13%{opacity:1;transform:scale(1.13)}25%,78%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.93)}}
+button:active{transform:translateY(1px) scale(.97)!important}
+#throw-btn:not(:disabled){box-shadow:0 0 0 0 rgba(214,158,46,.35);animation:throwBtnReady 1.8s ease-out infinite}@keyframes throwBtnReady{0%{box-shadow:0 0 0 0 rgba(214,158,46,.36)}70%{box-shadow:0 0 0 10px rgba(214,158,46,0)}100%{box-shadow:0 0 0 0 rgba(214,158,46,0)}}
+
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.8</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.9</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -764,6 +796,9 @@ let lastSeenCaptureEvent=null;
 let lastSettledThrowVisual=null;
 let pieceAnimating=false;
 let lastSeenMoveEvent=null;
+let lastShownTurnId=null;
+let startFxShownForRoom=null;
+let winFxShownForEvent=null;
 
 /* v1.3
    - 최대 8명, 팀당 최대 4명
@@ -1071,7 +1106,7 @@ async function startGame(){
  r.turnIndex=0;
  r.startTeam=startTeam;r.lastThrow=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
  ps.forEach(p=>{r.playerTeams[p.id]=p.team;r.playerSlots[p.id]=p.teamSlot});
- r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;pieceAnimating=false;yutAnimating=false;
+ r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;pieceAnimating=false;yutAnimating=false;lastShownTurnId=null;startFxShownForRoom=null;winFxShownForEvent=null;
  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
 }
 
@@ -1154,6 +1189,27 @@ function rosterHTML(r,team,turnId){
 }
 
 
+
+function showTurnTransition(r,turnId){
+ if(!turnId||turnId===lastShownTurnId||r.status!=='playing')return;
+ lastShownTurnId=turnId;const team=r.playerTeams?.[turnId]||'red';
+ const old=document.querySelector('.turn-transition-fx');if(old)old.remove();
+ const fx=document.createElement('div');fx.className='turn-transition-fx';
+ fx.innerHTML=`<div class="turn-transition-card"><div class="turn-team">${teamIcon(team)} ${teamKo(team)}</div><div class="turn-name">${esc(displayName(turnId))}</div><div class="turn-caption">차례입니다</div></div>`;
+ document.body.appendChild(fx);setTimeout(()=>fx.remove(),1000);
+}
+function showStartTeamFx(r){
+ const key=`${currentRoomId}-${r.createdAt||''}-${r.startTeam||''}`;if(!r.startTeam||startFxShownForRoom===key)return;startFxShownForRoom=key;const team=r.startTeam;
+ const fx=document.createElement('div');fx.className='start-team-fx';fx.innerHTML=`<div class="start-team-box"><div class="start-team-label">FIRST TURN</div><div class="start-team-main ${team}">${teamIcon(team)} ${teamKo(team)} 선공!</div><div class="start-team-sub">첫 번째 선수가 윷을 던집니다.</div></div>`;document.body.appendChild(fx);setTimeout(()=>fx.remove(),1900);
+}
+function showWinFx(team){
+ const key=`${currentRoomId}-${team}`;if(winFxShownForEvent===key)return;winFxShownForEvent=key;const fx=document.createElement('div');fx.className='win-fx';let confetti='';
+ for(let i=0;i<64;i++){const x=Math.random()*100,h=Math.floor(Math.random()*360),d=(2.3+Math.random()*1.8).toFixed(2)+'s',delay=(Math.random()*.8).toFixed(2)+'s',r=(Math.random()*360)+'deg',drift=(Math.random()*180-90)+'px';confetti+=`<i class="confetti-piece" style="--x:${x}%;--h:${h};--d:${d};--delay:${delay};--r:${r};--drift:${drift}"></i>`}
+ fx.innerHTML=confetti+`<div class="win-card"><div class="win-title">🎉 승리!</div><div class="win-team">${teamIcon(team)} ${teamKo(team)}</div></div>`;document.body.appendChild(fx);setTimeout(()=>fx.remove(),3500);
+}
+function pulseResult(){const el=$('throw-result');if(!el)return;el.classList.remove('result-pop');void el.offsetWidth;el.classList.add('result-pop')}
+function trayImpact(){const box=$('yut-sticks');if(!box)return;box.classList.remove('impact');void box.offsetWidth;box.classList.add('impact');setTimeout(()=>box.classList.remove('impact'),320)}
+
 function showCaptureEffect(eventData){
  const id=eventData?.id||eventData?.time;
  if(!id||lastSeenCaptureEvent===id)return;
@@ -1172,6 +1228,8 @@ function showCaptureEffect(eventData){
    <div class="capture-sub">${teamIcon(eventData.team)} ${esc(eventData.byName||teamKo(eventData.team))}</div>
  </div>`;
  document.body.appendChild(fx);
+ document.body.classList.add('capture-shake');
+ setTimeout(()=>document.body.classList.remove('capture-shake'),420);
  setTimeout(()=>fx.remove(),1500);
 }
 
@@ -1225,6 +1283,8 @@ function renderGame(r){
   setTimeout(()=>playRemoteMoveEvent(r.lastMoveEvent,r),30);
  }
  const order=r.order||[],turnId=order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId]||'red',meTurn=turnId===currentUser.id;
+ if(r.status==='playing'){if(r.startTeam)showStartTeamFx(r);showTurnTransition(r,turnId)}
+ if(r.status==='ended'&&r.winnerTeam)showWinFx(r.winnerTeam);
  $('red-roster').innerHTML=rosterHTML(r,'red',turnId);$('blue-roster').innerHTML=rosterHTML(r,'blue',turnId);
 
  $('turn-banner').textContent=r.status==='ended'?`🏆 ${teamIcon(r.winnerTeam)} ${teamKo(r.winnerTeam)} 승리!`:`${teamIcon(turnTeam)} ${displayName(turnId)}님의 차례`;
@@ -1319,6 +1379,7 @@ async function animateYutThrow(backs,isNak,nakIndex,visual){
  box.innerHTML=html;
  const els=[...box.querySelectorAll('.yut-stick')];
  const shadow=box.querySelector('.yut-motion-shadow');
+ setTimeout(()=>trayImpact(),1320);
 
  // Every stick is driven directly by requestAnimationFrame.
  const durations=els.map((_,i)=>1720+i*55);
@@ -1445,7 +1506,8 @@ async function animatePieceTravel(team,gid,opt){
   curX=targetX;curY=targetY;
   el.style.left=`${curX}px`;el.style.top=`${curY}px`;
   el.style.setProperty('transform','translate(-50%,-50%)','important');
-  await new Promise(r=>setTimeout(r,45));
+  el.classList.remove('step-land');void el.offsetWidth;el.classList.add('step-land');
+  await new Promise(r=>setTimeout(r,85));el.classList.remove('step-land');
  }
 
  // If completing the lap, give a tiny finish pop before the state removes the piece.
@@ -1517,6 +1579,7 @@ async function throwYut(){
   r.lastThrow={name:'낙',steps:0,backs:null,time:Date.now()};
   $('throw-result').textContent='낙!';
   $('throw-result').classList.add('nak-result');
+  pulseResult();
   if((r.pendingMoves||[]).length===0){
    r.turnIndex=(r.turnIndex+1)%r.order.length;
    r.throwCredits=1;
@@ -1540,6 +1603,7 @@ async function throwYut(){
  await save(`${ROOM_PATH}/${currentRoomId}`,r);
  await fetchSystemData();
  renderSticks(backs);
+ pulseResult();
 }
 async function commitMove(team,gid,moveId,optIndex){
  if(pieceAnimating||yutAnimating)return;
