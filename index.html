@@ -321,12 +321,173 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
  .game-chat-panel{height:320px}
 }
 
+
+/* ===== v1.5 : 진행방향 수정 / 관리자 자동방장 / 잡기효과 / 윷 3D 강화 ===== */
+
+/* 애니메이션이 끝난 뒤에도 4개 윷이 최종 낙하 위치에 그대로 남는다. */
+.yut-stick{
+  transform:
+    translate(var(--ex,0px),var(--ey,0px))
+    rotate(var(--erot,0deg))
+    rotateX(var(--erx,0deg))
+    rotateY(var(--ery,0deg))!important;
+  transform-style:preserve-3d;
+  background:
+    linear-gradient(90deg,#704017 0%,#a86429 12%,#e8b86b 31%,#ffd994 48%,#c17d36 69%,#7b461b 100%);
+  border:1px solid #5e3515;
+  box-shadow:
+    inset 3px 0 4px rgba(255,255,255,.34),
+    inset -4px 0 5px rgba(56,27,5,.32),
+    0 9px 10px rgba(0,0,0,.42);
+}
+.yut-stick:before{
+  content:'';
+  position:absolute;
+  left:4px;top:7px;bottom:7px;width:5px;
+  border-radius:5px;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.03));
+  opacity:.72;
+}
+.yut-stick.flat{
+  background:
+    linear-gradient(90deg,#542d13 0%,#744019 18%,#a86227 48%,#713a16 82%,#4a260f 100%);
+}
+.yut-stick.flat:after{
+  content:'×';
+  display:grid;
+  place-items:center;
+  position:absolute;
+  inset:0;
+  color:#f8dca7;
+  font-size:23px;
+  font-weight:1000;
+  text-shadow:0 2px 2px rgba(0,0,0,.45);
+}
+.yut-sticks.throwing .yut-stick{
+  animation:realYutThrow3D 1.75s cubic-bezier(.14,.73,.26,1) forwards!important;
+  animation-delay:var(--delay,0s)!important;
+}
+@keyframes realYutThrow3D{
+  0%{
+    transform:translate(var(--sx,0px),24px) rotate(var(--srot,0deg)) rotateX(0deg) rotateY(0deg) scale(.96);
+    filter:brightness(.92);
+  }
+  18%{
+    transform:translate(var(--mx,0px),-92px) rotate(calc(var(--srot,0deg) + 125deg)) rotateX(185deg) rotateY(115deg) scale(1.06);
+    filter:brightness(1.13);
+  }
+  37%{
+    transform:translate(var(--mx2,0px),-135px) rotate(calc(var(--srot,0deg) + 275deg)) rotateX(390deg) rotateY(245deg) scale(1.11);
+    filter:brightness(1.18);
+  }
+  58%{
+    transform:translate(calc(var(--ex,0px) - 9px),-54px) rotate(calc(var(--erot,0deg) + 190deg)) rotateX(590deg) rotateY(360deg) scale(1.04);
+    filter:brightness(1.05);
+  }
+  76%{
+    transform:translate(var(--ex,0px),calc(var(--ey,0px) + 2px)) rotate(calc(var(--erot,0deg) - 17deg)) rotateX(calc(var(--erx,0deg) + 35deg)) rotateY(var(--ery,0deg)) scale(1);
+  }
+  86%{
+    transform:translate(calc(var(--ex,0px) + 4px),calc(var(--ey,0px) - 15px)) rotate(calc(var(--erot,0deg) + 8deg)) rotateX(var(--erx,0deg)) rotateY(var(--ery,0deg)) scale(1.01);
+  }
+  93%{
+    transform:translate(calc(var(--ex,0px) - 2px),calc(var(--ey,0px) - 4px)) rotate(calc(var(--erot,0deg) - 3deg)) rotateX(var(--erx,0deg)) rotateY(var(--ery,0deg)) scale(1);
+  }
+  100%{
+    transform:translate(var(--ex,0px),var(--ey,0px)) rotate(var(--erot,0deg)) rotateX(var(--erx,0deg)) rotateY(var(--ery,0deg)) scale(1);
+    filter:brightness(1);
+  }
+}
+
+/* 잡기 연출 */
+.capture-fx{
+  position:fixed;
+  inset:0;
+  z-index:9999;
+  pointer-events:none;
+  display:grid;
+  place-items:center;
+  background:radial-gradient(circle,rgba(255,91,91,.12),transparent 42%);
+  animation:captureScreen 1.45s ease-out forwards;
+}
+.capture-fx-inner{
+  position:relative;
+  display:grid;
+  place-items:center;
+  min-width:260px;
+  min-height:180px;
+}
+.capture-burst{
+  position:absolute;
+  width:150px;height:150px;
+  border-radius:50%;
+  border:8px solid #ffdd73;
+  box-shadow:
+    0 0 0 14px rgba(255,92,92,.35),
+    0 0 45px rgba(255,221,115,.8);
+  animation:captureBurst 1.1s ease-out forwards;
+}
+.capture-text{
+  position:relative;
+  z-index:3;
+  font-size:48px;
+  font-weight:1000;
+  color:#fff4b8;
+  text-shadow:
+    0 4px 0 #b83b3b,
+    0 0 18px #ff6b6b,
+    0 0 32px rgba(255,214,80,.9);
+  animation:captureText 1.2s cubic-bezier(.15,.78,.24,1) forwards;
+}
+.capture-sub{
+  position:absolute;
+  top:126px;
+  z-index:3;
+  padding:5px 12px;
+  border-radius:14px;
+  background:rgba(18,24,33,.88);
+  border:1px solid #ffd166;
+  color:#ffd166;
+  font-weight:900;
+  font-size:13px;
+}
+.capture-star{
+  position:absolute;
+  font-size:28px;
+  animation:captureStar 1.05s ease-out forwards;
+}
+.capture-star.s1{--tx:-105px;--ty:-78px}
+.capture-star.s2{--tx:108px;--ty:-68px}
+.capture-star.s3{--tx:-118px;--ty:50px}
+.capture-star.s4{--tx:118px;--ty:56px}
+.capture-star.s5{--tx:0px;--ty:-118px}
+@keyframes captureBurst{
+  0%{transform:scale(.15);opacity:0}
+  30%{opacity:1}
+  100%{transform:scale(1.65);opacity:0}
+}
+@keyframes captureText{
+  0%{transform:scale(.25) rotate(-9deg);opacity:0}
+  35%{transform:scale(1.22) rotate(4deg);opacity:1}
+  58%{transform:scale(.96) rotate(-2deg)}
+  100%{transform:scale(1);opacity:0}
+}
+@keyframes captureStar{
+  0%{transform:translate(0,0) scale(.25) rotate(0);opacity:0}
+  25%{opacity:1}
+  100%{transform:translate(var(--tx),var(--ty)) scale(1.3) rotate(240deg);opacity:0}
+}
+@keyframes captureScreen{
+  0%,70%{opacity:1}
+  100%{opacity:0}
+}
+
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.4</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.5</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -421,6 +582,7 @@ let currentUser=null,currentRoomId=null,globalData={users:{},rooms:{},lobbyChat:
 let selectedGroup=null;
 let yutAnimating=false;
 let localThrowVisual=null;
+let lastSeenCaptureEvent=null;
 
 /* v1.3
    - 최대 8명, 팀당 최대 4명
@@ -432,16 +594,19 @@ let localThrowVisual=null;
 
 const POS={
   0:[90,90],
-  1:[74,90],2:[58,90],3:[42,90],4:[26,90],5:[10,90],
-  6:[10,74],7:[10,58],8:[10,42],9:[10,26],10:[10,10],
-  11:[26,10],12:[42,10],13:[58,10],14:[74,10],15:[90,10],
-  16:[90,26],17:[90,42],18:[90,58],19:[90,74],20:[90,90],
-  21:[26,74],22:[38,62],23:[50,50],24:[62,38],25:[74,26],
+  1:[90,74],2:[90,58],3:[90,42],4:[90,26],5:[90,10],
+  6:[74,10],7:[58,10],8:[42,10],9:[26,10],10:[10,10],
+  11:[10,26],12:[10,42],13:[10,58],14:[10,74],15:[10,90],
+  16:[26,90],17:[42,90],18:[58,90],19:[74,90],20:[90,90],
+  21:[74,26],22:[62,38],23:[50,50],24:[38,62],25:[26,74],
   26:[26,26],27:[38,38],28:[62,62],29:[74,74]
 };
 const ROUTES={
+  /* 오른쪽 아래 → 위 → 왼쪽 → 아래 → 오른쪽 → 도착 */
   outer:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+  /* 오른쪽 위 모서리에서 중앙을 지나 왼쪽 아래로 */
   diagA:[5,21,22,23,24,25,15,16,17,18,19,20],
+  /* 왼쪽 위 모서리에서 중앙을 지나 오른쪽 아래 도착 */
   diagB:[10,26,27,23,28,29,20],
   centerFinish:[23,28,29,20]
 };
@@ -598,16 +763,30 @@ async function createRoom(){
 }
 async function joinRoom(id){
  await fetchSystemData();
- const r=globalData.rooms[id];if(!r)return alert('방이 없습니다.');if(!r.players)r.players={};
+ const r=globalData.rooms[id];if(!r)return alert('방이 없습니다.');
+ if(!r.players)r.players={};
+
  if(!r.players[currentUser.id]){
   const players=normalizedPlayers(r);
-  if(players.length>=MAX_PLAYERS)return alert(`최대 ${MAX_PLAYERS}명까지 참가할 수 있어요.`);
+  if(players.length>=MAX_PLAYERS&&currentUser.id!==ADMIN_ID)return alert(`최대 ${MAX_PLAYERS}명까지 참가할 수 있어요.`);
   const redCount=players.filter(p=>p.team==='red').length,blueCount=players.filter(p=>p.team==='blue').length;
-  const team=redCount<=blueCount?'red':'blue',slot=firstFreeSlot(players,team);
-  r.players[currentUser.id]={id:currentUser.id,team,teamSlot:slot,joinedAt:Date.now()};
-  await save(`${ROOM_PATH}/${id}/players/${currentUser.id}`,r.players[currentUser.id]);
+  let team=redCount<=blueCount?'red':'blue';
+  let slot=firstFreeSlot(players,team);
+  if(slot===undefined){
+   team=team==='red'?'blue':'red';
+   slot=firstFreeSlot(players,team);
+  }
+  if(slot===undefined&&currentUser.id!==ADMIN_ID)return alert('양 팀 자리가 모두 가득 찼어요.');
+  r.players[currentUser.id]={id:currentUser.id,team,teamSlot:slot??0,joinedAt:Date.now()};
  }
- currentRoomId=id;localStorage.setItem('yutnori_session_room',id);fetchSystemData();
+
+ // 관리자 권한: andy212가 방에 입장하면 언제나 즉시 방장이 된다.
+ if(currentUser.id===ADMIN_ID)r.hostId=ADMIN_ID;
+
+ await save(`${ROOM_PATH}/${id}`,r);
+ currentRoomId=id;
+ localStorage.setItem('yutnori_session_room',id);
+ fetchSystemData();
 }
 async function switchTeam(targetTeam){
  if(!currentRoomId||!['red','blue'].includes(targetTeam))return;
@@ -633,7 +812,15 @@ async function leaveRoom(){
 }
 async function explodeRoom(id){if(currentUser.id!==ADMIN_ID)return;id=id||currentRoomId;if(id&&confirm(`'${id}' 방을 폭파할까요?`)){await remove(`${ROOM_PATH}/${id}`);if(currentRoomId===id){currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby')}fetchSystemData()}}
 
-function renderRoomOrGame(){const r=globalData.rooms[currentRoomId];if(!r)return;if(r.status==='playing'||r.status==='ended'){switchView('view-game');renderGame(r)}else{switchView('view-room');renderRoom(r)}}
+function renderRoomOrGame(){
+ const r=globalData.rooms[currentRoomId];if(!r)return;
+ if(currentUser?.id===ADMIN_ID&&r.hostId!==ADMIN_ID){
+  r.hostId=ADMIN_ID;
+  save(`${ROOM_PATH}/${currentRoomId}/hostId`,ADMIN_ID);
+ }
+ if(r.status==='playing'||r.status==='ended'){switchView('view-game');renderGame(r)}
+ else{switchView('view-room');renderRoom(r)}
+}
 function teamSlotHTML(players,team,slot){
  const p=players.find(x=>x.team===team&&x.teamSlot===slot),chars=teamChars(team);
  if(!p)return `<div class="team-slot empty"><div class="mini-avatar">${chars[slot]}</div><div class="team-slot-info"><div class="team-slot-id">${slot+1}번 자리</div><div class="team-slot-sub">참가자 대기 중</div></div></div>`;
@@ -699,7 +886,7 @@ function drawBoard(){
  const nodes=[...new Set([...ROUTES.outer,...ROUTES.diagA,...ROUTES.diagB])];
  nl.innerHTML=nodes.map(n=>{
   const [x,y]=POS[n],cls=[0,5,10,15,20].includes(n)?'corner':n===23?'center':'';
-  return `<div class="node ${cls}" style="left:${x}%;top:${y}%">${(n===0||n===20)?'출발':n===23?'中':''}</div>`;
+  return `<div class="node ${cls}" style="left:${x}%;top:${y}%">${(n===0||n===20)?'출발/도착':n===23?'中':''}</div>`;
  }).join('');
  const edges=[],seen=new Set();
  function add(route){for(let i=0;i<route.length-1;i++){const a=route[i],b=route[i+1],key=`${Math.min(a,b)}-${Math.max(a,b)}`;if(!seen.has(key)){seen.add(key);edges.push([a,b])}}}
@@ -760,8 +947,31 @@ function rosterHTML(r,team,turnId){
  }).join('');
 }
 
+
+function showCaptureEffect(eventData){
+ const id=eventData?.id||eventData?.time;
+ if(!id||lastSeenCaptureEvent===id)return;
+ lastSeenCaptureEvent=id;
+ const old=document.querySelector('.capture-fx');if(old)old.remove();
+ const fx=document.createElement('div');
+ fx.className='capture-fx';
+ fx.innerHTML=`<div class="capture-fx-inner">
+   <div class="capture-burst"></div>
+   <div class="capture-star s1">✨</div>
+   <div class="capture-star s2">⭐</div>
+   <div class="capture-star s3">💥</div>
+   <div class="capture-star s4">✨</div>
+   <div class="capture-star s5">⭐</div>
+   <div class="capture-text">잡았다!</div>
+   <div class="capture-sub">${teamIcon(eventData.team)} ${esc(eventData.byName||teamKo(eventData.team))}</div>
+ </div>`;
+ document.body.appendChild(fx);
+ setTimeout(()=>fx.remove(),1500);
+}
+
 function renderGame(r){
  drawBoard();$('btn-explode-game').classList.toggle('hidden',currentUser.id!==ADMIN_ID);renderChat(r.chat||[],'game-chat-msgs');
+ if(r.lastGameEvent?.type==='capture')showCaptureEffect(r.lastGameEvent);
  const order=r.order||[],turnId=order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId]||'red',meTurn=turnId===currentUser.id;
  $('red-roster').innerHTML=rosterHTML(r,'red',turnId);$('blue-roster').innerHTML=rosterHTML(r,'blue',turnId);
 
@@ -813,7 +1023,7 @@ function renderSticks(backs){
  const box=$('yut-sticks');
  const visual=localThrowVisual;
  const finals=[
-  {x:-72,y:-5,r:-18},{x:-23,y:2,r:7},{x:28,y:-1,r:-9},{x:75,y:4,r:14}
+  {x:-82,y:2,r:-21},{x:-30,y:-5,r:9},{x:27,y:4,r:-12},{x:82,y:-2,r:18}
  ];
  let html='<div class="throw-dust"></div>';
  for(let i=0;i<4;i++){
@@ -870,7 +1080,7 @@ async function throwYut(){
    srot:Math.random()*26-13,
    mx:(Math.random()*100-50),
    mx2:(Math.random()*135-67),
-   ex:(i-1.5)*48+(Math.random()*22-11),
+   ex:(i-1.5)*55+(Math.random()*18-9),
    ey:Math.random()*12-6,
    erot:Math.random()*80-40,
    erx:(i<backs?180:0)+(Math.random()*16-8),
@@ -882,7 +1092,7 @@ async function throwYut(){
  $('throw-result').classList.remove('nak-result');
  renderSticks(backs);
 
- await new Promise(resolve=>setTimeout(resolve,1600));
+ await new Promise(resolve=>setTimeout(resolve,1870));
 
  localThrowVisual=null;
  yutAnimating=false;
@@ -930,7 +1140,20 @@ async function commitMove(team,gid,moveId,optIndex){
  const count=g.members.length;g.route=opt.route;g.idx=opt.idx;
  let captured=false;
  if(opt.finish){teamObj.finished=(teamObj.finished||0)+count;teamObj.groups.splice(gi,1)}
- else{captured=captureOpponents(r,team,g);mergeOwnGroups(teamObj,g)}
+ else{
+  captured=captureOpponents(r,team,g);
+  mergeOwnGroups(teamObj,g);
+  if(captured){
+   r.lastGameEvent={
+    id:`capture-${Date.now()}-${Math.random()}`,
+    type:'capture',
+    team,
+    by:currentUser.id,
+    byName:displayName(currentUser.id),
+    time:Date.now()
+   };
+  }
+ }
  r.pendingMoves.splice(moveIndex,1);selectedGroup=null;
  if((teamObj.finished||0)>=4){r.status='ended';r.winnerTeam=team;r.pendingMoves=[];r.throwCredits=0;r.lastThrow=null}
  else{
