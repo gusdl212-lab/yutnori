@@ -604,12 +604,68 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
   }
 }
 
+
+/* ===== v1.7 : JS 프레임 기반 윷 투척 + 말 한칸씩 이동 ===== */
+.yut-sticks{overflow:visible!important;perspective:900px!important;transform-style:preserve-3d}
+.yut-stick{
+  animation:none!important;
+  transition:none!important;
+  will-change:transform,filter,opacity;
+  transform-style:preserve-3d!important;
+  backface-visibility:visible;
+}
+.yut-sticks.throwing .yut-stick,
+.yut-sticks.throwing.nak .yut-stick.nak-stick{
+  animation:none!important;
+}
+.yut-stick.motion-air{
+  box-shadow:
+    inset 3px 0 5px rgba(255,255,255,.35),
+    inset -4px 0 5px rgba(45,24,6,.3),
+    0 18px 18px rgba(0,0,0,.25)!important;
+}
+.yut-motion-shadow{
+  position:absolute;
+  left:50%;bottom:15px;
+  width:160px;height:28px;
+  transform:translateX(-50%);
+  border-radius:50%;
+  background:radial-gradient(ellipse,rgba(0,0,0,.34),rgba(0,0,0,0) 70%);
+  filter:blur(2px);
+  pointer-events:none;
+  opacity:.65;
+}
+.team-piece.moving-piece{
+  z-index:90!important;
+  pointer-events:none!important;
+  filter:drop-shadow(0 9px 8px rgba(0,0,0,.43)) drop-shadow(0 0 8px rgba(102,252,241,.42));
+}
+.team-piece.moving-piece .mal-stack{
+  animation:pieceTravelBob .32s ease-in-out infinite alternate;
+}
+@keyframes pieceTravelBob{
+  from{filter:brightness(1)}
+  to{filter:brightness(1.12)}
+}
+.move-trail-dot{
+  position:absolute;
+  width:10px;height:10px;
+  border-radius:50%;
+  transform:translate(-50%,-50%);
+  background:rgba(102,252,241,.65);
+  box-shadow:0 0 10px rgba(102,252,241,.75);
+  z-index:5;
+  pointer-events:none;
+  animation:trailFade .65s forwards;
+}
+@keyframes trailFade{to{opacity:0;transform:translate(-50%,-50%) scale(.2)}}
+
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.6</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.7</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -706,6 +762,7 @@ let yutAnimating=false;
 let localThrowVisual=null;
 let lastSeenCaptureEvent=null;
 let lastSettledThrowVisual=null;
+let pieceAnimating=false;
 
 /* v1.3
    - 최대 8명, 팀당 최대 4명
@@ -775,7 +832,7 @@ async function fetchSystemData(){
  if(currentRoomId){
   const room=globalData.rooms[currentRoomId];
   if(!room){currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return}
-  renderRoomOrGame();
+  if(!pieceAnimating)renderRoomOrGame();
  }else renderLobby();
 }
 function startSync(){
@@ -1000,7 +1057,7 @@ async function startGame(){
  for(const p of ps)await save(`${ROOM_PATH}/${currentRoomId}/players/${p.id}`,p);
  r.status='playing';r.turnIndex=0;r.order=buildTurnOrder(ps);r.lastThrow=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
  ps.forEach(p=>{r.playerTeams[p.id]=p.team;r.playerSlots[p.id]=p.teamSlot});
- r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;
+ r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;pieceAnimating=false;yutAnimating=false;
  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
 }
 
@@ -1029,11 +1086,23 @@ function movementOptions(g,move){
  const out=[];
  for(const b of branchBases(g)){
   const route=ROUTES[b.route],next=b.idx+move.steps;
-  if(next>=route.length)out.push({route:'finished',idx:route.length-1,node:null,finish:true,branchLabel:b.label});
-  else out.push({route:b.route,idx:next,node:route[next],finish:false,branchLabel:b.label});
+  if(next>=route.length){
+   out.push({
+    route:'finished',idx:route.length-1,node:null,finish:true,
+    branchLabel:b.label,travelRoute:b.route,travelStartIdx:b.idx,travelEndIdx:route.length-1
+   });
+  }else{
+   out.push({
+    route:b.route,idx:next,node:route[next],finish:false,
+    branchLabel:b.label,travelRoute:b.route,travelStartIdx:b.idx,travelEndIdx:next
+   });
+  }
  }
  const seen=new Set(),uniq=[];
- for(const o of out){const k=o.finish?'FIN':`${o.route}-${o.idx}`;if(!seen.has(k)){seen.add(k);uniq.push(o)}}
+ for(const o of out){
+  const k=o.finish?`FIN-${o.travelRoute}`:`${o.route}-${o.idx}`;
+  if(!seen.has(k)){seen.add(k);uniq.push(o)}
+ }
  return uniq;
 }
 function resetCapturedGroup(teamObj,index){
@@ -1117,7 +1186,7 @@ function renderGame(r){
    const home=g.route==='home',node=getNode(g),base=home?POS[0]:POS[node]||POS[0],homeIndex=home?(g.members[0]||0):0;
    const dx=home?[-22,-7,8,23][homeIndex]:0,dy=home?[18,5,-8,-21][homeIndex]:0;
    const selectable=meTurn&&turnTeam===team&&(r.throwCredits||0)===0&&(r.pendingMoves||[]).length>0;
-   pieces+=`<div class="team-piece ${team} ${selectable?'selectable':''}" style="left:calc(${base[0]}% + ${dx}px);top:calc(${base[1]}% + ${dy}px)" ${selectable?`onclick="event.stopPropagation();selectTeamGroup('${team}','${g.gid}')"`:''}><div class="mal-stack">${groupCharacters(team,g.members)}${g.members.length>1?`<span class="stack-badge">×${g.members.length}</span>`:''}<span class="team-ribbon">${teamIcon(team)}</span></div></div>`;
+   pieces+=`<div class="team-piece ${team} ${selectable?'selectable':''}" data-team="${team}" data-gid="${g.gid}" style="left:calc(${base[0]}% + ${dx}px);top:calc(${base[1]}% + ${dy}px)" ${selectable?`onclick="event.stopPropagation();selectTeamGroup('${team}','${g.gid}')"`:''}><div class="mal-stack">${groupCharacters(team,g.members)}${g.members.length>1?`<span class="stack-badge">×${g.members.length}</span>`:''}<span class="team-ribbon">${teamIcon(team)}</span></div></div>`;
   });
  });
 
@@ -1144,35 +1213,196 @@ function renderGame(r){
 }
 function renderSticks(backs){
  const box=$('yut-sticks');
- const visual=localThrowVisual || lastSettledThrowVisual;
+ const visual=lastSettledThrowVisual;
  const finals=[
   {x:-82,y:2,r:-21},{x:-30,y:-5,r:9},{x:27,y:4,r:-12},{x:82,y:-2,r:18}
  ];
- let html='<div class="throw-dust"></div>';
+ let html='<div class="yut-motion-shadow"></div><div class="throw-dust"></div>';
  for(let i=0;i<4;i++){
   const flat=backs!=null&&i<backs;
   const v=visual?.sticks?.[i]||{};
   const f=finals[i];
-  html+=`<div class="yut-stick ${flat?'flat':''} ${visual?.nakIndex===i?'nak-stick':''}" style="
-    --sx:${v.sx??(i-1.5)*9}px;
-    --srot:${v.srot??[-8,5,-3,9][i]}deg;
-    --mx:${v.mx??((i-1.5)*18)}px;
-    --mx2:${v.mx2??((i-1.5)*28)}px;
-    --ex:${v.ex??f.x}px;
-    --ey:${v.ey??f.y}px;
-    --erot:${v.erot??f.r}deg;
-    --erx:${v.erx??(flat?180:0)}deg;
-    --ery:${v.ery??0}deg;
-    --delay:${v.delay??i*.035}s;"></div>`;
+  const ex=v.ex??f.x,ey=v.ey??f.y,erot=v.erot??f.r,erx=v.erx??(flat?180:0),ery=v.ery??0;
+  html+=`<div class="yut-stick ${flat?'flat':''}" data-stick="${i}" style="
+   --ex:${ex}px;--ey:${ey}px;--erot:${erot}deg;--erx:${erx}deg;--ery:${ery}deg;
+   transform:translate3d(${ex}px,${ey}px,0) rotateZ(${erot}deg) rotateX(${erx}deg) rotateY(${ery}deg)!important;"></div>`;
  }
  box.innerHTML=html;
- box.classList.toggle('throwing',!!localThrowVisual?.throwing);
- box.classList.toggle('nak',(localThrowVisual?.nakIndex!=null));
+ box.classList.remove('throwing','nak');
 }
+
+function easeOutCubic(t){return 1-Math.pow(1-t,3)}
+function easeInQuad(t){return t*t}
+function lerp(a,b,t){return a+(b-a)*t}
+
+function animateFrame(duration,draw){
+ return new Promise(resolve=>{
+  const start=performance.now();
+  function frame(now){
+   const raw=Math.min(1,(now-start)/duration);
+   draw(raw);
+   if(raw<1)requestAnimationFrame(frame);else resolve();
+  }
+  requestAnimationFrame(frame);
+ });
+}
+
+async function animateYutThrow(backs,isNak,nakIndex,visual){
+ const box=$('yut-sticks');
+ lastSettledThrowVisual=null;
+ // Build fresh four sticks close together in the hand/launch position.
+ let html='<div class="yut-motion-shadow"></div><div class="throw-dust"></div>';
+ for(let i=0;i<4;i++){
+  const flat=i<backs;
+  html+=`<div class="yut-stick ${flat?'flat':''} motion-air" data-stick="${i}"></div>`;
+ }
+ box.innerHTML=html;
+ const els=[...box.querySelectorAll('.yut-stick')];
+ const shadow=box.querySelector('.yut-motion-shadow');
+
+ // Every stick is driven directly by requestAnimationFrame.
+ const durations=els.map((_,i)=>1720+i*55);
+ await Promise.all(els.map((el,i)=>animateFrame(durations[i],t=>{
+  const v=visual.sticks[i];
+  // tiny stagger while preserving same overall throw
+  const local=Math.max(0,Math.min(1,(t-(i*.018))/(1-i*.018)));
+  let x,y,z,rz,rx,ry,scale;
+
+  if(isNak&&i===nakIndex){
+   // A "nak" stick rises with the others, then flies beyond the tray.
+   if(local<.48){
+    const q=local/.48;
+    x=lerp(v.sx,v.mx,easeOutCubic(q));
+    y=lerp(22,-145,Math.sin(q*Math.PI/2));
+    z=lerp(0,90,Math.sin(q*Math.PI));
+   }else{
+    const q=(local-.48)/.52;
+    x=lerp(v.mx,245,easeInQuad(q));
+    y=lerp(-145,70,q);
+    z=lerp(90,0,q);
+   }
+   rz=v.srot+900*local;rx=760*local;ry=520*local;scale=1+Math.sin(local*Math.PI)*.11;
+  }else{
+   // Strong upward launch, visible apex, then gravity-like fall and two small bounces.
+   if(local<.43){
+    const q=local/.43;
+    x=lerp(v.sx,v.mx,easeOutCubic(q));
+    y=lerp(24,-150,Math.sin(q*Math.PI/2));
+    z=85*Math.sin(q*Math.PI);
+   }else if(local<.77){
+    const q=(local-.43)/.34;
+    x=lerp(v.mx,v.ex,q);
+    y=lerp(-150,v.ey,easeInQuad(q));
+    z=80*(1-q);
+   }else{
+    const q=(local-.77)/.23;
+    x=v.ex;
+    const bounce=(1-q)*Math.abs(Math.sin(q*Math.PI*2.2))*18;
+    y=v.ey-bounce;
+    z=0;
+   }
+   const turns=2.2+i*.18;
+   rz=v.srot+(360*turns)*local+(v.erot-v.srot)*local;
+   rx=(720+i*95)*local+v.erx*local;
+   ry=(390+i*70)*local+v.ery*local;
+   scale=1+Math.sin(local*Math.PI)*.1;
+  }
+
+  el.style.setProperty('transform',
+   `translate3d(${x}px,${y}px,${z}px) rotateZ(${rz}deg) rotateX(${rx}deg) rotateY(${ry}deg) scale(${scale})`,
+   'important');
+  el.style.filter=`brightness(${1+Math.sin(local*Math.PI)*.16})`;
+  if(shadow){
+   shadow.style.opacity=String(.68-.43*Math.sin(local*Math.PI));
+   shadow.style.transform=`translateX(-50%) scale(${1-.42*Math.sin(local*Math.PI)})`;
+  }
+ })));
+
+ // Snap all non-nak sticks to their final stable transforms.
+ els.forEach((el,i)=>{
+  const v=visual.sticks[i];
+  if(isNak&&i===nakIndex)return;
+  el.classList.remove('motion-air');
+  el.style.setProperty('transform',
+   `translate3d(${v.ex}px,${v.ey}px,0) rotateZ(${v.erot}deg) rotateX(${v.erx}deg) rotateY(${v.ery}deg)`,
+   'important');
+  el.style.filter='brightness(1)';
+ });
+ if(shadow){shadow.style.opacity='.65';shadow.style.transform='translateX(-50%) scale(1)'}
+}
+
+function getTravelNodes(opt){
+ const route=ROUTES[opt.travelRoute]||[];
+ const start=Math.max(0,opt.travelStartIdx||0);
+ const end=Math.min(route.length-1,opt.travelEndIdx??start);
+ return route.slice(start+1,end+1);
+}
+
+async function animatePieceTravel(team,gid,opt){
+ const layer=$('pieces-layer');
+ const el=layer?.querySelector(`.team-piece[data-team="${team}"][data-gid="${CSS.escape(gid)}"]`);
+ if(!el)return;
+
+ const board=$('board-wrap');
+ const nodes=getTravelNodes(opt);
+ if(!nodes.length)return;
+
+ pieceAnimating=true;
+ el.classList.add('moving-piece');
+ // Hide move markers during travel.
+ layer.querySelectorAll('.move-marker').forEach(m=>m.style.visibility='hidden');
+
+ const startRect=el.getBoundingClientRect();
+ const boardRect=board.getBoundingClientRect();
+ let curX=(startRect.left+startRect.width/2)-boardRect.left;
+ let curY=(startRect.top+startRect.height/2)-boardRect.top;
+
+ for(const node of nodes){
+  const p=POS[node];if(!p)continue;
+  const targetX=board.clientWidth*p[0]/100;
+  const targetY=board.clientHeight*p[1]/100;
+  const sx=curX,sy=curY;
+  const dist=Math.hypot(targetX-sx,targetY-sy);
+  const duration=Math.max(170,Math.min(285,135+dist*.55));
+
+  // a short trail dot at the node we just left
+  const trail=document.createElement('span');
+  trail.className='move-trail-dot';
+  trail.style.left=`${sx}px`;trail.style.top=`${sy}px`;
+  layer.appendChild(trail);
+  setTimeout(()=>trail.remove(),700);
+
+  await animateFrame(duration,t=>{
+   const e=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+   const x=lerp(sx,targetX,e),y=lerp(sy,targetY,e);
+   const hop=Math.sin(Math.PI*t)*18;
+   el.style.left=`${x}px`;el.style.top=`${y}px`;
+   el.style.setProperty('transform',
+    `translate(-50%,-50%) translateY(${-hop}px) scale(${1+Math.sin(Math.PI*t)*.08})`,
+    'important');
+  });
+
+  curX=targetX;curY=targetY;
+  el.style.left=`${curX}px`;el.style.top=`${curY}px`;
+  el.style.setProperty('transform','translate(-50%,-50%)','important');
+  await new Promise(r=>setTimeout(r,45));
+ }
+
+ // If completing the lap, give a tiny finish pop before the state removes the piece.
+ if(opt.finish){
+  await animateFrame(300,t=>{
+   el.style.opacity=String(1-t);
+   el.style.setProperty('transform',
+    `translate(-50%,-50%) translateY(${-25*t}px) scale(${1+.25*t})`,
+    'important');
+  });
+ }
+}
+
 function selectTeamGroup(team,gid){selectedGroup={team,gid};const r=globalData.rooms[currentRoomId];if(r)renderGame(r)}
 
 async function throwYut(){
- if(yutAnimating)return;
+ if(yutAnimating||pieceAnimating)return;
  await fetchSystemData();
  const r=globalData.rooms[currentRoomId];
  if(!r||r.status!=='playing')return;
@@ -1183,12 +1413,10 @@ async function throwYut(){
  $('throw-btn').classList.add('animating');
  selectedGroup=null;
 
- // 약 2.5% 확률로 낙. 한 개의 윷이 판 밖으로 튀는 연출.
  const isNak=Math.random()<0.025;
  const nakIndex=isNak?Math.floor(Math.random()*4):null;
-
- // 최종 판정은 애니메이션 시작 전에 정해두고, 화면에서는 떨어진 뒤 공개.
  const backs=[0,1,2,3].filter(()=>Math.random()<.5).length;
+
  let name,steps;
  if(backs===1){name='도';steps=1}
  else if(backs===2){name='개';steps=2}
@@ -1196,46 +1424,35 @@ async function throwYut(){
  else if(backs===4){name='윷';steps=4}
  else{name='모';steps=5}
 
- localThrowVisual={
-  throwing:true,nakIndex,
+ const visual={
   sticks:[0,1,2,3].map((_,i)=>({
-   sx:(i-1.5)*11+(Math.random()*8-4),
-   srot:Math.random()*26-13,
-   mx:(Math.random()*100-50),
-   mx2:(Math.random()*135-67),
-   ex:(i-1.5)*55+(Math.random()*18-9),
+   sx:(i-1.5)*10+(Math.random()*6-3),
+   srot:Math.random()*18-9,
+   mx:(Math.random()*90-45),
+   ex:(i-1.5)*56+(Math.random()*16-8),
    ey:Math.random()*12-6,
-   erot:Math.random()*80-40,
-   erx:(i<backs?180:0)+(Math.random()*16-8),
-   ery:Math.random()*22-11,
-   delay:i*.045
+   erot:Math.random()*60-30,
+   erx:(i<backs?180:0)+(Math.random()*10-5),
+   ery:Math.random()*18-9
   }))
  };
- $('throw-result').textContent='슝—!';
+
+ $('throw-result').textContent='윷이 올라갑니다!';
  $('throw-result').classList.remove('nak-result');
- renderSticks(backs);
 
- await new Promise(resolve=>setTimeout(resolve,2020));
+ await animateYutThrow(backs,isNak,nakIndex,visual);
 
- lastSettledThrowVisual={
-  throwing:false,
-  nakIndex:null,
-  sticks:(localThrowVisual?.sticks||[]).map(v=>({...v}))
- };
- localThrowVisual=null;
+ // Keep the four final sticks exactly where they landed.
+ lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v}))};
  yutAnimating=false;
  $('throw-btn').classList.remove('animating');
 
- // 실제 Firebase 상태는 애니메이션이 끝난 뒤 반영.
  r.throwCredits=(r.throwCredits||0)-1;
 
  if(isNak){
   r.lastThrow={name:'낙',steps:0,backs:null,time:Date.now()};
   $('throw-result').textContent='낙!';
   $('throw-result').classList.add('nak-result');
-
-  // 낙은 이번 던지기 무효. 이미 쌓여 있던 이동값은 유지.
-  // 남은 이동값도 없으면 다음 사람에게 턴을 넘김.
   if((r.pendingMoves||[]).length===0){
    r.turnIndex=(r.turnIndex+1)%r.order.length;
    r.throwCredits=1;
@@ -1244,6 +1461,8 @@ async function throwYut(){
   }
   await save(`${ROOM_PATH}/${currentRoomId}`,r);
   await fetchSystemData();
+  // Re-render the 4 settled sticks after network refresh.
+  renderSticks(null);
   setTimeout(()=>{if($('throw-result'))$('throw-result').classList.remove('nak-result')},1200);
   return;
  }
@@ -1256,39 +1475,68 @@ async function throwYut(){
 
  await save(`${ROOM_PATH}/${currentRoomId}`,r);
  await fetchSystemData();
+ renderSticks(backs);
 }
 async function commitMove(team,gid,moveId,optIndex){
- await fetchSystemData();const r=globalData.rooms[currentRoomId];
+ if(pieceAnimating||yutAnimating)return;
+ await fetchSystemData();
+ const r=globalData.rooms[currentRoomId];
  if(!r||r.status!=='playing'||(r.throwCredits||0)>0)return;
  const turnId=r.order[r.turnIndex||0],turnTeam=r.playerTeams?.[turnId];
  if(turnId!==currentUser.id||team!==turnTeam)return;
- const moveIndex=(r.pendingMoves||[]).findIndex(m=>m.id===moveId);if(moveIndex<0)return;
- const move=r.pendingMoves[moveIndex],teamObj=r.teams[team],gi=teamObj.groups.findIndex(g=>g.gid===gid);if(gi<0)return;
- const g=teamObj.groups[gi],opts=movementOptions(g,move),opt=opts[optIndex];if(!opt)return;
- const count=g.members.length;g.route=opt.route;g.idx=opt.idx;
+
+ const moveIndex=(r.pendingMoves||[]).findIndex(m=>m.id===moveId);
+ if(moveIndex<0)return;
+ const move=r.pendingMoves[moveIndex],teamObj=r.teams[team],gi=teamObj.groups.findIndex(g=>g.gid===gid);
+ if(gi<0)return;
+ const g=teamObj.groups[gi],opts=movementOptions(g,move),opt=opts[optIndex];
+ if(!opt)return;
+
+ $('move-guide').textContent=`${move.name} ${move.steps}칸 이동 중...`;
+
+ // The visible piece now travels node-by-node before the Firebase state changes.
+ try{
+  await animatePieceTravel(team,gid,opt);
+ }catch(err){
+  console.error('말 이동 애니메이션 오류',err);
+  pieceAnimating=false;
+ }
+ const count=g.members.length;
+ g.route=opt.route;g.idx=opt.idx;
  let captured=false;
- if(opt.finish){teamObj.finished=(teamObj.finished||0)+count;teamObj.groups.splice(gi,1)}
- else{
+
+ if(opt.finish){
+  teamObj.finished=(teamObj.finished||0)+count;
+  teamObj.groups.splice(gi,1);
+ }else{
   captured=captureOpponents(r,team,g);
   mergeOwnGroups(teamObj,g);
   if(captured){
    r.lastGameEvent={
     id:`capture-${Date.now()}-${Math.random()}`,
-    type:'capture',
-    team,
-    by:currentUser.id,
-    byName:displayName(currentUser.id),
-    time:Date.now()
+    type:'capture',team,by:currentUser.id,byName:displayName(currentUser.id),time:Date.now()
    };
   }
  }
- r.pendingMoves.splice(moveIndex,1);selectedGroup=null;
- if((teamObj.finished||0)>=4){r.status='ended';r.winnerTeam=team;r.pendingMoves=[];r.throwCredits=0;r.lastThrow=null}
- else{
+
+ r.pendingMoves.splice(moveIndex,1);
+ selectedGroup=null;
+
+ if((teamObj.finished||0)>=4){
+  r.status='ended';r.winnerTeam=team;r.pendingMoves=[];r.throwCredits=0;r.lastThrow=null;
+ }else{
   if(captured&&move.name!=='윷'&&move.name!=='모')r.throwCredits=(r.throwCredits||0)+1;
-  if((r.throwCredits||0)===0&&(r.pendingMoves||[]).length===0){r.turnIndex=(r.turnIndex+1)%r.order.length;r.throwCredits=1;r.lastThrow=null}
+  if((r.throwCredits||0)===0&&(r.pendingMoves||[]).length===0){
+   r.turnIndex=(r.turnIndex+1)%r.order.length;
+   r.throwCredits=1;r.lastThrow=null;
+  }
  }
- await save(`${ROOM_PATH}/${currentRoomId}`,r);await fetchSystemData();
+
+ await save(`${ROOM_PATH}/${currentRoomId}`,r);
+ await fetchSystemData();
+ pieceAnimating=false;
+ const fresh=globalData.rooms[currentRoomId];
+ if(fresh)renderGame(fresh);
 }
 </script>
 </body>
