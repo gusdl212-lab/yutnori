@@ -880,6 +880,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 </div>
 
 <script>
+/* ===== v1.15 : Firebase 실시간 스트림 안정화 + 방 목록 유지 ===== */
 const FIREBASE_BASE_URL="https://andy-5cb5e-default-rtdb.firebaseio.com/othello_platform";
 const ROOM_PATH="yutnoriRooms";
 const ADMIN_ID="andy212";
@@ -915,6 +916,7 @@ let autoTurnBusy=false;
 let lastAutoTurnKey=null;
 let pauseNoticeKey=null;
 let lastRenderedRoomKey=null;
+let lastRenderedLobbyKey=null;
 let syncFetchBusy=false;
 
 /* v1.3
@@ -995,12 +997,15 @@ function queueRealtimeRender(){
   if(!currentUser)return;
   if(currentRoomId){
    const room=globalData.rooms?.[currentRoomId];
-   if(!room){currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return;}
+   if(!room){currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;lastRenderedLobbyKey=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return;}
    if(!pieceAnimating&&!yutAnimating){
     const roomKey=JSON.stringify(room);
     if(roomKey!==lastRenderedRoomKey)renderRoomOrGame();
    }
-  }else renderLobby();
+  }else{
+   const lobbyKey=JSON.stringify({rooms:globalData.rooms||{},lobbyChat:normalizeChatMessages(globalData.lobbyChat).slice(-30)});
+   if(lobbyKey!==lastRenderedLobbyKey){lastRenderedLobbyKey=lobbyKey;renderLobby();}
+  }
  },25);
 }
 function closeRealtimeStream(){
@@ -1034,10 +1039,25 @@ function handleRealtimeEvent(evt,isPatch){
  try{
   const payload=JSON.parse(evt.data||'{}');
   const path=payload.path||'/';
-  if(path==='/')globalData=payload.data||{};
-  else if(isPatch){globalData=mergeRealtimePath(globalData,path,payload.data||{});}
-  else globalData=setRealtimePath(globalData,path,payload.data);
-  globalData.users=globalData.users||{};globalData.rooms=globalData.rooms||{};globalData.lobbyChat=globalData.lobbyChat||[];
+  const data=Object.prototype.hasOwnProperty.call(payload,'data')?payload.data:null;
+
+  // Firebase SSE의 최초 전체 스냅샷은 '/' PUT으로 온다.
+  // 이후 PATCH/PUT은 기존 전역 상태에 정확히 병합한다.
+  // 특히 data=null을 {}로 바꾸면 삭제 이벤트가 빈 객체로 변해
+  // 방이 사라지거나 잘못된 방으로 보이는 문제가 생길 수 있으므로
+  // null은 반드시 '삭제' 의미 그대로 전달한다.
+  if(path==='/'){
+   if(!isPatch && data && typeof data==='object') globalData=data;
+  }else if(isPatch){
+   globalData=mergeRealtimePath(globalData,path,data);
+  }else{
+   globalData=setRealtimePath(globalData,path,data);
+  }
+
+  globalData=globalData&&typeof globalData==='object'?globalData:{};
+  globalData.users=globalData.users&&typeof globalData.users==='object'?globalData.users:{};
+  globalData.rooms=globalData.rooms&&typeof globalData.rooms==='object'?globalData.rooms:{};
+  globalData.lobbyChat=globalData.lobbyChat||[];
   if(!globalData.users[ADMIN_ID])globalData.users[ADMIN_ID]={id:ADMIN_ID,pw:'tmdgus12!@',email:'admin@korea.kr',lastActive:0};
   if(currentUser&&globalData.users[currentUser.id])currentUser=globalData.users[currentUser.id];
   queueRealtimeRender();
@@ -1126,7 +1146,7 @@ async function handleLogout(){
  if(currentUser)await save(`users/${currentUser.id}/lastActive`,0);
  localStorage.removeItem('omok_autologin_enabled');localStorage.removeItem('omok_session_user');localStorage.removeItem('yutnori_session_room');
  clearInterval(syncInterval);clearInterval(heartbeatInterval);clearInterval(turnTimerInterval);
- closeRealtimeStream();currentUser=null;currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;switchView('view-auth');
+ closeRealtimeStream();currentUser=null;currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;lastRenderedLobbyKey=null;switchView('view-auth');
 }
 
 function renderGameMenu(){
@@ -1216,7 +1236,7 @@ async function joinRoom(id){
  if(currentUser.id===ADMIN_ID)r.hostId=ADMIN_ID;
 
  await save(`${ROOM_PATH}/${id}`,r);
- currentRoomId=id;
+ currentRoomId=id;lastRenderedRoomKey=null;lastRenderedLobbyKey=null;
  localStorage.setItem('yutnori_session_room',id);
  fetchSystemData();
 }
@@ -1240,7 +1260,7 @@ async function leaveRoom(){
   if(!left.length)await remove(`${ROOM_PATH}/${id}`);
   else{if(r.hostId===currentUser.id)r.hostId=left[0].id;await save(`${ROOM_PATH}/${id}`,r)}
  }
- currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');fetchSystemData();
+ currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;lastRenderedLobbyKey=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');fetchSystemData();
 }
 async function returnToRoom(){
  if(!currentRoomId||!currentUser)return;
