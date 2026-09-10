@@ -692,12 +692,55 @@ body.capture-shake .container{animation:captureShake .34s ease-out}@keyframes ca
 button:active{transform:translateY(1px) scale(.97)!important}
 #throw-btn:not(:disabled){box-shadow:0 0 0 0 rgba(214,158,46,.35);animation:throwBtnReady 1.8s ease-out infinite}@keyframes throwBtnReady{0%{box-shadow:0 0 0 0 rgba(214,158,46,.36)}70%{box-shadow:0 0 0 10px rgba(214,158,46,0)}100%{box-shadow:0 0 0 0 rgba(214,158,46,0)}}
 
+
+
+/* ===== v1.11 : 상대방 투척 동기화 / 누르기 힘 게이지 / 빽도 / 도착말 구분 ===== */
+.throw-power-box{
+  width:min(330px,100%);
+  margin:2px auto 4px;
+  padding:8px 10px 9px;
+  border:1px solid rgba(255,209,102,.28);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(0,0,0,.12));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.07),0 5px 14px rgba(0,0,0,.16);
+}
+.throw-power-head{display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:900;color:#dce5ef;margin-bottom:6px}
+.throw-power-head strong{color:#ffd166;font-size:12px}
+.throw-power-track{position:relative;height:13px;border-radius:99px;background:#0a0f15;border:1px solid #384454;overflow:hidden;box-shadow:inset 0 2px 5px rgba(0,0,0,.5)}
+.throw-power-fill{position:absolute;inset:0 auto 0 0;width:0%;border-radius:99px;background:linear-gradient(90deg,#5ca8ff 0%,#66fcf1 48%,#ffd166 78%,#ff8b6b 100%);box-shadow:0 0 12px rgba(255,209,102,.35);transition:none}
+.throw-power-glint{position:absolute;top:0;bottom:0;left:-25%;width:24%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);opacity:0;pointer-events:none}
+.throw-power-box.charging .throw-power-glint{opacity:.8;animation:powerGlint .7s linear infinite}
+@keyframes powerGlint{to{left:105%}}
+.throw-power-tip{text-align:center;margin-top:5px;font-size:10px;color:#9aa8b9;min-height:14px}
+.throw-power-box.charged{border-color:rgba(255,209,102,.7);box-shadow:0 0 18px rgba(255,209,102,.15),inset 0 1px 0 rgba(255,255,255,.08)}
+.throw-btn{touch-action:none;user-select:none;-webkit-user-select:none}
+.throw-btn.charging{filter:brightness(1.12);box-shadow:0 0 0 4px rgba(255,209,102,.14),0 0 22px rgba(255,209,102,.32)!important}
+.throw-result.nak-result{color:#ff7777}
+.throw-result.baekdo-result{color:#72bcff;text-shadow:0 0 16px rgba(92,168,255,.65)}
+.yut-stick{transform-style:preserve-3d!important}
+.yut-stick:after{transform:translateZ(7px)}
+.yut-stick:not(.flat):after{content:'';position:absolute;left:6px;right:5px;top:13px;height:3px;border-radius:3px;background:rgba(91,45,12,.28);box-shadow:0 14px 0 rgba(255,231,173,.13),0 28px 0 rgba(91,45,12,.18),0 42px 0 rgba(255,231,173,.11);pointer-events:none}
+.yut-stick.flat:after{transform:translateZ(7px)}
+.yut-stick:before{transform:translateZ(8px);box-shadow:0 0 7px rgba(255,255,255,.12)}
+.yut-sticks{background:
+ radial-gradient(ellipse at 50% 62%,rgba(255,235,191,.22),transparent 47%),
+ radial-gradient(ellipse at center,rgba(239,222,181,.18),rgba(73,48,24,.03) 62%,transparent 64%),
+ linear-gradient(180deg,rgba(105,75,43,.12),rgba(0,0,0,.04));
+}
+.yut-sticks.throwing{animation:throwTrayFloat 1.95s ease-out}
+@keyframes throwTrayFloat{0%{transform:scale(1)}38%{transform:scale(1.012) translateY(-1px)}72%{transform:scale(.995)}100%{transform:scale(1)}}
+.team-piece.arrived-at-start .mal-stack:before{content:'도착';position:absolute;left:50%;top:-17px;transform:translateX(-50%);z-index:30;padding:2px 6px;border-radius:8px;background:linear-gradient(180deg,#fff4b0,#ffd166);color:#5a3b00;border:1px solid #b77a12;font-size:8px;font-weight:1000;white-space:nowrap;box-shadow:0 2px 7px rgba(0,0,0,.3)}
+.team-piece.arrived-at-start .mal-stack:after{content:'';position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);width:58px;height:58px;border-radius:50%;border:3px solid rgba(255,209,102,.78);box-shadow:0 0 12px rgba(255,209,102,.32),inset 0 0 8px rgba(255,209,102,.15);z-index:-1;pointer-events:none}
+.team-piece.arrived-at-start .mal-avatar{box-shadow:0 0 0 2px rgba(255,209,102,.35),0 5px 12px rgba(130,83,10,.35)}
+@keyframes arrivedPulse{50%{filter:brightness(1.12) drop-shadow(0 0 7px rgba(255,209,102,.4))}}
+.team-piece.arrived-at-start .mal-stack{animation:arrivedPulse 1.7s ease-in-out infinite}
+
 </style>
 </head>
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.10</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.11</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -766,7 +809,8 @@ button:active{transform:translateY(1px) scale(.97)!important}
      </div>
      <div class="yut-controls">
       <div id="turn-banner" class="turn-banner">게임 준비 중...</div>
-      <div class="throw-area"><div id="yut-sticks" class="yut-sticks"></div><div id="throw-result" class="throw-result">🪵</div><button id="throw-btn" class="btn-gold" onclick="throwYut()">윷 던지기!</button></div>
+      <div class="throw-area"><div id="yut-sticks" class="yut-sticks"></div><div id="throw-result" class="throw-result">🪵</div><button id="throw-btn" class="btn-gold throw-btn" type="button" onpointerdown="beginThrowCharge(event)" onpointerup="endThrowCharge(event)" onpointercancel="cancelThrowCharge(event)" oncontextmenu="return false">윷 던지기!</button></div>
+      <div class="throw-power-box" id="throw-power-box"><div class="throw-power-head"><span>윷 던지기 힘</span><strong id="throw-power-value">0%</strong></div><div class="throw-power-track"><div id="throw-power-fill" class="throw-power-fill"></div><div class="throw-power-glint"></div></div><div id="throw-power-tip" class="throw-power-tip">마우스를 누르고 있는 동안 게이지가 올라갑니다.</div></div>
       <div id="pending-rolls" class="pending-rolls"></div>
       <div id="move-guide" class="legend">내 차례에 윷을 던지고 움직일 말을 선택하세요.</div>
      </div>
@@ -799,6 +843,11 @@ let lastSeenMoveEvent=null;
 let lastShownTurnId=null;
 let startFxShownForRoom=null;
 let winFxShownForEvent=null;
+let lastSeenThrowEvent=null;
+let throwChargeStart=0;
+let throwChargeFrame=0;
+let throwChargePower=0;
+let throwChargePointerId=null;
 
 /* v1.3
    - 최대 8명, 팀당 최대 4명
@@ -1105,9 +1154,9 @@ async function startGame(){
  const firstIdx=baseOrder.findIndex(id=>ps.find(p=>p.id===id)?.team===startTeam);
  r.order=firstIdx>0?[...baseOrder.slice(firstIdx),...baseOrder.slice(0,firstIdx)]:baseOrder;
  r.turnIndex=0;
- r.startTeam=startTeam;r.lastThrow=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
+ r.startTeam=startTeam;r.lastThrow=null;r.lastThrowEvent=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
  ps.forEach(p=>{r.playerTeams[p.id]=p.team;r.playerSlots[p.id]=p.teamSlot});
- r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;pieceAnimating=false;yutAnimating=false;lastShownTurnId=null;startFxShownForRoom=null;winFxShownForEvent=null;
+ r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;pieceAnimating=false;yutAnimating=false;lastShownTurnId=null;startFxShownForRoom=null;winFxShownForEvent=null;lastSeenThrowEvent=null;setThrowPowerUI(0,false);
  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
 }
 
@@ -1136,6 +1185,15 @@ function movementOptions(g,move){
  const out=[];
  for(const b of branchBases(g)){
   const route=ROUTES[b.route],next=b.idx+move.steps;
+  if(move.steps<0){
+   if(b.route==='outer'&&b.idx===0){
+    // 출발점에서 빽도는 바깥길 마지막 칸으로 한 칸 물러난다.
+    out.push({route:'outer',idx:route.length-2,node:route[route.length-2],finish:false,branchLabel:'빽도',travelRoute:'outer',travelStartIdx:0,travelEndIdx:0,travelNodePath:[route[route.length-2]]});
+   }else if(next>=0){
+    out.push({route:b.route,idx:next,node:route[next],finish:false,branchLabel:'빽도',travelRoute:b.route,travelStartIdx:b.idx,travelEndIdx:next});
+   }
+   continue;
+  }
   if(next>=route.length){
    out.push({
     route:'finished',idx:route.length-1,node:null,finish:true,
@@ -1264,6 +1322,7 @@ async function playRemoteMoveEvent(evt,r){
   travelRoute:evt.travelRoute,
   travelStartIdx:evt.travelStartIdx,
   travelEndIdx:evt.travelEndIdx,
+  travelNodePath:evt.travelNodePath||null,
   finish:evt.finish
  };
  try{
@@ -1277,8 +1336,76 @@ async function playRemoteMoveEvent(evt,r){
  if(fresh)renderGame(fresh);
 }
 
+
+function setThrowPowerUI(power,charging=false){
+ const box=$('throw-power-box'),fill=$('throw-power-fill'),value=$('throw-power-value'),tip=$('throw-power-tip'),btn=$('throw-btn');
+ if(!box||!fill||!value||!tip)return;
+ const p=Math.max(0,Math.min(1,power||0)),pct=Math.round(p*100);
+ fill.style.width=`${pct}%`;value.textContent=`${pct}%`;
+ box.classList.toggle('charging',charging);box.classList.toggle('charged',p>=.97);
+ if(charging)tip.textContent=p>=.97?'최대 힘! 놓으면 바로 던집니다.':'누르고 있는 만큼 힘이 올라갑니다.';
+ else tip.textContent=p>0?'이번 던지기 힘: '+pct+'%':'마우스를 누르고 있는 동안 게이지가 올라갑니다.';
+ btn?.classList.toggle('charging',charging);
+}
+function updateThrowCharge(){
+ if(!throwChargeStart)return;
+ const elapsed=performance.now()-throwChargeStart;
+ // 약 1.55초에 최대치. 너무 짧은 클릭도 최소 8%의 힘을 갖는다.
+ throwChargePower=Math.max(.08,Math.min(1,elapsed/1550));
+ setThrowPowerUI(throwChargePower,true);
+ if(throwChargePower<1)throwChargeFrame=requestAnimationFrame(updateThrowCharge);
+}
+function beginThrowCharge(e){
+ if(e){e.preventDefault();throwChargePointerId=e.pointerId??null;try{e.currentTarget.setPointerCapture?.(e.pointerId)}catch(_){} }
+ if(yutAnimating||pieceAnimating)return;
+ const btn=$('throw-btn');if(btn?.disabled)return;
+ throwChargeStart=performance.now();throwChargePower=.08;setThrowPowerUI(.08,true);
+ cancelAnimationFrame(throwChargeFrame);throwChargeFrame=requestAnimationFrame(updateThrowCharge);
+}
+async function endThrowCharge(e){
+ if(e){e.preventDefault();if(throwChargePointerId!==null&&e.pointerId!==throwChargePointerId)return;}
+ if(!throwChargeStart)return;
+ const p=throwChargePower||Math.max(.08,Math.min(1,(performance.now()-throwChargeStart)/1550));
+ cancelAnimationFrame(throwChargeFrame);throwChargeFrame=0;throwChargeStart=0;throwChargePointerId=null;
+ setThrowPowerUI(p,false);
+ await throwYut(p);
+}
+function cancelThrowCharge(e){
+ if(e&&throwChargePointerId!==null&&e.pointerId!==throwChargePointerId)return;
+ cancelAnimationFrame(throwChargeFrame);throwChargeFrame=0;throwChargeStart=0;throwChargePointerId=null;throwChargePower=0;setThrowPowerUI(0,false);
+}
+
+async function playRemoteThrowEvent(evt){
+ if(!evt?.id||evt.id===lastSeenThrowEvent)return;
+ lastSeenThrowEvent=evt.id;
+ if(evt.by===currentUser?.id)return;
+ if(yutAnimating||pieceAnimating)return;
+ const visual=evt.visual;
+ if(!visual?.sticks?.length)return;
+ yutAnimating=true;
+ const power=Math.max(.08,Math.min(1,Number(evt.power)||.7));
+ setThrowPowerUI(power,false);
+ $('throw-result').textContent='상대방이 윷을 던집니다!';
+ $('throw-result').classList.remove('nak-result','baekdo-result');
+ try{
+  await animateYutThrow(evt.backs??0,!!evt.isNak,evt.nakIndex??null,visual,power);
+  lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v})),backFlags:[...visual.backFlags],backs:visual.backs};
+  if(evt.name==='낙'){
+   $('throw-result').textContent='낙!';$('throw-result').classList.add('nak-result');
+  }else if(evt.name==='빽도'){
+   $('throw-result').textContent='빽도 -1';$('throw-result').classList.add('baekdo-result');
+  }else $('throw-result').textContent=`${evt.name} ${evt.steps>0?'+':''}${evt.steps}`;
+  pulseResult();
+ }catch(err){console.error('상대방 윷 투척 연출 오류',err)}
+ yutAnimating=false;
+ setTimeout(()=>{if($('throw-result'))$('throw-result').classList.remove('nak-result','baekdo-result')},1300);
+}
+
 function renderGame(r){
  drawBoard();$('btn-explode-game').classList.toggle('hidden',currentUser.id!==ADMIN_ID);renderChat(r.chat||[],'game-chat-msgs');
+ if(r.lastThrowEvent?.id&&r.lastThrowEvent.id!==lastSeenThrowEvent&&!yutAnimating&&Date.now()-(r.lastThrowEvent.time||0)<5000){
+  setTimeout(()=>playRemoteThrowEvent(r.lastThrowEvent),30);
+ }
  if(r.lastGameEvent?.type==='capture')showCaptureEffect(r.lastGameEvent);
  if(r.lastMoveEvent?.id&&r.lastMoveEvent.id!==lastSeenMoveEvent&&!pieceAnimating){
   setTimeout(()=>playRemoteMoveEvent(r.lastMoveEvent,r),30);
@@ -1295,6 +1422,7 @@ function renderGame(r){
  if(!yutAnimating){
   $('throw-result').textContent=result?(result.name==='낙'?'낙!':`${result.name} +${result.steps}`):'🪵';
   $('throw-result').classList.toggle('nak-result',result?.name==='낙');
+  $('throw-result').classList.toggle('baekdo-result',result?.name==='빽도');
   renderSticks(result?.backs);
  }
  $('pending-rolls').innerHTML=pendingRollsHTML(r);
@@ -1304,10 +1432,10 @@ function renderGame(r){
   const groups=r.teams?.[team]?.groups||[];
   groups.forEach(g=>{
    if(g.route==='finished')return;
-   const home=g.route==='home',node=getNode(g),base=home?POS[0]:POS[node]||POS[0],homeIndex=home?(g.members[0]||0):0;
-   const dx=home?[-22,-7,8,23][homeIndex]:0,dy=home?[18,5,-8,-21][homeIndex]:0;
+   const home=g.route==='home',node=getNode(g),arrivedAtStart=!home&&node===0,base=home?POS[0]:POS[node]||POS[0],homeIndex=home?(g.members[0]||0):0;
+   const dx=home?[-22,-7,8,23][homeIndex]:(arrivedAtStart?0:0),dy=home?[18,5,-8,-21][homeIndex]:(arrivedAtStart?0:0);
    const selectable=meTurn&&turnTeam===team&&(r.throwCredits||0)===0&&(r.pendingMoves||[]).length>0;
-   pieces+=`<div class="team-piece ${team} ${selectable?'selectable':''}" data-team="${team}" data-gid="${g.gid}" style="left:calc(${base[0]}% + ${dx}px);top:calc(${base[1]}% + ${dy}px)" ${selectable?`onclick="event.stopPropagation();selectTeamGroup('${team}','${g.gid}')"`:''}><div class="mal-stack">${groupCharacters(team,g.members)}${g.members.length>1?`<span class="stack-badge">×${g.members.length}</span>`:''}<span class="team-ribbon">${teamIcon(team)}</span></div></div>`;
+   pieces+=`<div class="team-piece ${team} ${arrivedAtStart?'arrived-at-start':''} ${selectable?'selectable':''}" data-team="${team}" data-gid="${g.gid}" style="left:calc(${base[0]}% + ${dx}px);top:calc(${base[1]}% + ${dy}px)" ${selectable?`onclick="event.stopPropagation();selectTeamGroup('${team}','${g.gid}')"`:''}><div class="mal-stack">${groupCharacters(team,g.members)}${g.members.length>1?`<span class="stack-badge">×${g.members.length}</span>`:''}<span class="team-ribbon">${teamIcon(team)}</span></div></div>`;
   });
  });
 
@@ -1368,7 +1496,7 @@ function animateFrame(duration,draw){
  });
 }
 
-async function animateYutThrow(backs,isNak,nakIndex,visual){
+async function animateYutThrow(backs,isNak,nakIndex,visual,power=0.78){
  const box=$('yut-sticks');
  lastSettledThrowVisual=null;
  // Build fresh four sticks close together in the hand/launch position.
@@ -1383,7 +1511,8 @@ async function animateYutThrow(backs,isNak,nakIndex,visual){
  setTimeout(()=>trayImpact(),1320);
 
  // Every stick is driven directly by requestAnimationFrame.
- const durations=els.map((_,i)=>1720+i*55);
+ const powerN=Math.max(.08,Math.min(1,Number(power)||.78));
+ const durations=els.map((_,i)=>(1450+powerN*650)+i*55);
  await Promise.all(els.map((el,i)=>animateFrame(durations[i],t=>{
   const v=visual.sticks[i];
   // tiny stagger while preserving same overall throw
@@ -1395,12 +1524,12 @@ async function animateYutThrow(backs,isNak,nakIndex,visual){
    if(local<.48){
     const q=local/.48;
     x=lerp(v.sx,v.mx,easeOutCubic(q));
-    y=lerp(22,-145,Math.sin(q*Math.PI/2));
-    z=lerp(0,90,Math.sin(q*Math.PI));
+    y=lerp(22,-105-(powerN*55),Math.sin(q*Math.PI/2));
+    z=lerp(0,70+(powerN*45),Math.sin(q*Math.PI));
    }else{
     const q=(local-.48)/.52;
     x=lerp(v.mx,245,easeInQuad(q));
-    y=lerp(-145,70,q);
+    y=lerp(-105-(powerN*55),70+powerN*10,q);
     z=lerp(90,0,q);
    }
    rz=v.srot+900*local;rx=760*local;ry=520*local;scale=1+Math.sin(local*Math.PI)*.11;
@@ -1409,13 +1538,13 @@ async function animateYutThrow(backs,isNak,nakIndex,visual){
    if(local<.43){
     const q=local/.43;
     x=lerp(v.sx,v.mx,easeOutCubic(q));
-    y=lerp(24,-150,Math.sin(q*Math.PI/2));
-    z=85*Math.sin(q*Math.PI);
+    y=lerp(24,-105-(powerN*55),Math.sin(q*Math.PI/2));
+    z=(62+powerN*42)*Math.sin(q*Math.PI);
    }else if(local<.77){
     const q=(local-.43)/.34;
     x=lerp(v.mx,v.ex,q);
-    y=lerp(-150,v.ey,easeInQuad(q));
-    z=80*(1-q);
+    y=lerp(-105-(powerN*55),v.ey,easeInQuad(q));
+    z=(70+powerN*20)*(1-q);
    }else{
     const q=(local-.77)/.23;
     x=v.ex;
@@ -1423,10 +1552,10 @@ async function animateYutThrow(backs,isNak,nakIndex,visual){
     y=v.ey-bounce;
     z=0;
    }
-   const turns=2.2+i*.18;
+   const turns=1.75+powerN*1.15+i*.18;
    rz=v.srot+(360*turns)*local+(v.erot-v.srot)*local;
-   rx=(720+i*95)*local+v.erx*local;
-   ry=(390+i*70)*local+v.ery*local;
+   rx=((520+powerN*330)+i*95)*local+v.erx*local;
+   ry=((300+powerN*190)+i*70)*local+v.ery*local;
    scale=1+Math.sin(local*Math.PI)*.1;
   }
 
@@ -1457,6 +1586,12 @@ function getTravelNodes(opt){
  const route=ROUTES[opt.travelRoute]||[];
  const start=Math.max(0,opt.travelStartIdx||0);
  const end=Math.min(route.length-1,opt.travelEndIdx??start);
+ if(opt.travelReverse){
+  const out=[];
+  for(let i=start-1;i>=Math.max(0,end);i--)out.push(route[i]);
+  return out;
+ }
+ if(opt.travelNodePath)return opt.travelNodePath;
  return route.slice(start+1,end+1);
 }
 
@@ -1524,7 +1659,7 @@ async function animatePieceTravel(team,gid,opt){
 
 function selectTeamGroup(team,gid){selectedGroup={team,gid};const r=globalData.rooms[currentRoomId];if(r)renderGame(r)}
 
-async function throwYut(){
+async function throwYut(power=throwChargePower||.78){
  if(yutAnimating||pieceAnimating)return;
  await fetchSystemData();
  const r=globalData.rooms[currentRoomId];
@@ -1536,21 +1671,29 @@ async function throwYut(){
  $('throw-btn').classList.add('animating');
  selectedGroup=null;
 
+ const powerN=Math.max(.08,Math.min(1,Number(power)||.78));
  const isNak=Math.random()<0.025;
  const nakIndex=isNak?Math.floor(Math.random()*4):null;
- const backs=[0,1,2,3].filter(()=>Math.random()<.5).length;
- const shuffled=[0,1,2,3].sort(()=>Math.random()-.5);
- const backSet=new Set(shuffled.slice(0,backs));
-
- let name,steps;
- if(backs===1){name='도';steps=1}
- else if(backs===2){name='개';steps=2}
- else if(backs===3){name='걸';steps=3}
- else if(backs===4){name='윷';steps=4}
- else{name='모';steps=5}
+ const isBaekdo=!isNak&&Math.random()<0.05;
+ let backs,name,steps,backSet;
+ if(isBaekdo){
+  // 빽도는 5% 확률. 한 개의 윷만 뒤집힌 모습으로 보여준다.
+  backs=1;name='빽도';steps=-1;
+  const bi=Math.floor(Math.random()*4);backSet=new Set([bi]);
+ }else{
+  backs=[0,1,2,3].filter(()=>Math.random()<.5).length;
+  const shuffled=[0,1,2,3].sort(()=>Math.random()-.5);
+  backSet=new Set(shuffled.slice(0,backs));
+  if(backs===1){name='도';steps=1}
+  else if(backs===2){name='개';steps=2}
+  else if(backs===3){name='걸';steps=3}
+  else if(backs===4){name='윷';steps=4}
+  else{name='모';steps=5}
+ }
 
  const visual={
   backs,
+  power:powerN,
   backFlags:[0,1,2,3].map(i=>backSet.has(i)),
   sticks:[0,1,2,3].map((_,i)=>({
    sx:(i-1.5)*10+(Math.random()*6-3),
@@ -1567,7 +1710,7 @@ async function throwYut(){
  $('throw-result').textContent='윷이 올라갑니다!';
  $('throw-result').classList.remove('nak-result');
 
- await animateYutThrow(backs,isNak,nakIndex,visual);
+ await animateYutThrow(backs,isNak,nakIndex,visual,powerN);
 
  // Keep the four final sticks exactly where they landed.
  lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v})),backFlags:[...visual.backFlags],backs:visual.backs};
@@ -1578,6 +1721,8 @@ async function throwYut(){
 
  if(isNak){
   r.lastThrow={name:'낙',steps:0,backs:null,time:Date.now()};
+  r.lastThrowEvent={id:`throw-${Date.now()}-${Math.random()}`,by:currentUser.id,name:'낙',steps:0,backs:null,isNak:true,nakIndex,power:powerN,visual,time:Date.now()};
+  lastSeenThrowEvent=r.lastThrowEvent.id;
   $('throw-result').textContent='낙!';
   $('throw-result').classList.add('nak-result');
   pulseResult();
@@ -1599,11 +1744,14 @@ async function throwYut(){
  r.pendingMoves=r.pendingMoves||[];
  r.pendingMoves.push(move);
  r.lastThrow={name,steps,backs,time:Date.now()};
+ r.lastThrowEvent={id:`throw-${Date.now()}-${Math.random()}`,by:currentUser.id,name,steps,backs,isNak:false,nakIndex:null,power:powerN,visual,time:Date.now()};
+ lastSeenThrowEvent=r.lastThrowEvent.id;
  if(name==='윷'||name==='모')r.throwCredits=(r.throwCredits||0)+1;
 
  await save(`${ROOM_PATH}/${currentRoomId}`,r);
  await fetchSystemData();
  renderSticks(backs);
+ $('throw-result').classList.toggle('baekdo-result',name==='빽도');
  pulseResult();
 }
 async function commitMove(team,gid,moveId,optIndex){
@@ -1634,6 +1782,7 @@ async function commitMove(team,gid,moveId,optIndex){
   travelStartIdx:opt.travelStartIdx,
   travelEndIdx:opt.travelEndIdx,
   finish:!!opt.finish,
+  travelNodePath:opt.travelNodePath||null,
   time:Date.now()
  };
  // 상대방 화면은 이 이벤트를 보고, 최종 위치가 저장되기 전에 동일한 경로 애니메이션을 재생한다.
