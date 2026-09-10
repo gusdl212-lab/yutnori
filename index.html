@@ -782,7 +782,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.14</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.16</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -880,7 +880,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 </div>
 
 <script>
-/* ===== v1.15 : Firebase 실시간 스트림 안정화 + 방 목록 유지 ===== */
+/* ===== v1.16 : Firebase 실시간 스트림 경로 정합성 수정 + 방 목록 즉시 유지 ===== */
 const FIREBASE_BASE_URL="https://andy-5cb5e-default-rtdb.firebaseio.com/othello_platform";
 const ROOM_PATH="yutnoriRooms";
 const ADMIN_ID="andy212";
@@ -1035,19 +1035,42 @@ function startRealtimeStream(){
  };
  connect();
 }
+function normalizeRealtimePath(path){
+ // Firebase 실제 루트 구조: /users, /yutnoriRooms, /lobbyChat
+ // 화면 상태 구조: globalData.users, globalData.rooms, globalData.lobbyChat
+ if(path==='/'||!path)return '/';
+ if(path===`/${ROOM_PATH}`)return '/rooms';
+ if(path.startsWith(`/${ROOM_PATH}/`))return '/rooms/'+path.slice(ROOM_PATH.length+2);
+ return path;
+}
+function applyRealtimeRootSnapshot(data){
+ const root=(data&&typeof data==='object')?data:{};
+ // 여기서 globalData=root로 넣으면 yutnoriRooms라는 실제 Firebase 키가
+ // globalData.rooms와 매칭되지 않아 로그인 직후 방 목록이 사라진다.
+ globalData={
+  users:root.users&&typeof root.users==='object'?root.users:{},
+  rooms:root[ROOM_PATH]&&typeof root[ROOM_PATH]==='object'?root[ROOM_PATH]:{},
+  lobbyChat:root.lobbyChat||[]
+ };
+}
 function handleRealtimeEvent(evt,isPatch){
  try{
   const payload=JSON.parse(evt.data||'{}');
-  const path=payload.path||'/';
+  const firebasePath=payload.path||'/';
+  const path=normalizeRealtimePath(firebasePath);
   const data=Object.prototype.hasOwnProperty.call(payload,'data')?payload.data:null;
 
-  // Firebase SSE의 최초 전체 스냅샷은 '/' PUT으로 온다.
-  // 이후 PATCH/PUT은 기존 전역 상태에 정확히 병합한다.
-  // 특히 data=null을 {}로 바꾸면 삭제 이벤트가 빈 객체로 변해
-  // 방이 사라지거나 잘못된 방으로 보이는 문제가 생길 수 있으므로
-  // null은 반드시 '삭제' 의미 그대로 전달한다.
-  if(path==='/'){
-   if(!isPatch && data && typeof data==='object') globalData=data;
+  // 최초 SSE 스냅샷은 실제 Firebase 루트 키를 화면용 상태 키로 변환한다.
+  // 이후 이벤트도 yutnoriRooms -> rooms로 변환한 뒤 적용해야
+  // 최초에는 보였다가 다음 이벤트에서 방 목록이 비어버리는 현상이 없다.
+  if(firebasePath==='/'){
+   if(!isPatch)applyRealtimeRootSnapshot(data);
+   else if(data&&typeof data==='object'){
+    // 루트 PATCH도 전체 키를 화면 상태에 맞춰 개별 반영
+    if(Object.prototype.hasOwnProperty.call(data,'users'))globalData.users=data.users||{};
+    if(Object.prototype.hasOwnProperty.call(data,ROOM_PATH))globalData.rooms=data[ROOM_PATH]||{};
+    if(Object.prototype.hasOwnProperty.call(data,'lobbyChat'))globalData.lobbyChat=data.lobbyChat||[];
+   }
   }else if(isPatch){
    globalData=mergeRealtimePath(globalData,path,data);
   }else{
