@@ -694,6 +694,14 @@ button:active{transform:translateY(1px) scale(.97)!important}
 
 
 
+/* ===== v1.17 : 일시정지 상태 유지 / 게임 화면 고정 ===== */
+.pause-overlay{position:absolute!important;inset:0!important;z-index:500!important;display:grid!important;place-items:center!important;background:rgba(5,9,14,.52)!important;backdrop-filter:blur(2.5px)!important;border-radius:inherit!important;pointer-events:auto!important}
+.pause-overlay.hidden{display:none!important}
+.pause-card{width:min(78%,330px);padding:22px 24px;border-radius:20px;text-align:center;background:rgba(13,20,29,.94);border:2px solid rgba(255,209,102,.72);box-shadow:0 0 38px rgba(0,0,0,.42),0 0 25px rgba(255,209,102,.12);color:#eef4f9}
+.pause-card h2{margin:0 0 8px;font-size:23px;color:#ffd166}
+.pause-card p{margin:0 0 15px;font-size:13px;font-weight:900;color:#e1e9f2}
+.pause-card .btn-main:disabled{cursor:not-allowed;transform:none!important}
+.pause-card .resume-note{margin-top:9px;font-size:10px;color:#9caabd}
 /* ===== v1.13 : 일시정지 / 1분 자동투척 / 빽도 제한 / 종료 복귀 ===== */
 .throw-power-box{
   width:min(330px,100%);
@@ -782,7 +790,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.16</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.17</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -880,7 +888,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 </div>
 
 <script>
-/* ===== v1.16 : Firebase 실시간 스트림 경로 정합성 수정 + 방 목록 즉시 유지 ===== */
+/* ===== v1.17 : Firebase 실시간 스트림 경로 정합성 수정 + 방 목록 즉시 유지 ===== */
 const FIREBASE_BASE_URL="https://andy-5cb5e-default-rtdb.firebaseio.com/othello_platform";
 const ROOM_PATH="yutnoriRooms";
 const ADMIN_ID="andy212";
@@ -1314,7 +1322,7 @@ function renderRoomOrGame(){
   r.hostId=ADMIN_ID;
   save(`${ROOM_PATH}/${currentRoomId}/hostId`,ADMIN_ID);
  }
- if(r.status==='playing'||r.status==='ended'){switchView('view-game');renderGame(r)}
+ if(r.status==='playing'||r.status==='paused'||r.status==='ended'){switchView('view-game');renderGame(r)}
  else{switchView('view-room');renderRoom(r)}
 }
 function teamSlotHTML(players,team,slot){
