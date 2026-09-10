@@ -721,6 +721,9 @@ button:active{transform:translateY(1px) scale(.97)!important}
 .yut-stick:after{transform:translateZ(7px)}
 .yut-stick:not(.flat):after{content:'';position:absolute;left:6px;right:5px;top:13px;height:3px;border-radius:3px;background:rgba(91,45,12,.28);box-shadow:0 14px 0 rgba(255,231,173,.13),0 28px 0 rgba(91,45,12,.18),0 42px 0 rgba(255,231,173,.11);pointer-events:none}
 .yut-stick.flat:after{transform:translateZ(7px)}
+.yut-stick.baekdo-stick:after{content:'빽'!important;display:grid;place-items:center;position:absolute;inset:0;color:#9ed1ff;font-size:17px;font-weight:1000;letter-spacing:-1px;text-shadow:0 2px 3px rgba(0,0,0,.7);background:radial-gradient(circle at 50% 45%,rgba(55,150,255,.28),transparent 58%);border-radius:10px}
+.yut-stick.baekdo-stick{box-shadow:inset 3px 0 5px rgba(255,255,255,.18),inset -4px 0 5px rgba(20,55,90,.45),0 0 0 2px rgba(92,168,255,.22),0 9px 10px rgba(0,0,0,.42)}
+.yut-stick.baekdo-stick:before{opacity:.28}
 .yut-stick:before{transform:translateZ(8px);box-shadow:0 0 7px rgba(255,255,255,.12)}
 .yut-sticks{background:
  radial-gradient(ellipse at 50% 62%,rgba(255,235,191,.22),transparent 47%),
@@ -910,6 +913,8 @@ let turnTimerInterval=null;
 let autoTurnBusy=false;
 let lastAutoTurnKey=null;
 let pauseNoticeKey=null;
+let lastRenderedRoomKey=null;
+let syncFetchBusy=false;
 
 /* v1.3
    - 최대 8명, 팀당 최대 4명
@@ -968,6 +973,8 @@ window.addEventListener('DOMContentLoaded',async()=>{
 });
 
 async function fetchSystemData(){
+ if(syncFetchBusy)return;
+ syncFetchBusy=true;
  try{
   const r=await fetch(`${FIREBASE_BASE_URL}.json`);
   if(r.ok){
@@ -977,19 +984,21 @@ async function fetchSystemData(){
    globalData.lobbyChat=d.lobbyChat||[];
   }
  }catch(e){console.error("Firebase 오류",e)}
+ finally{syncFetchBusy=false}
  if(!globalData.users[ADMIN_ID])globalData.users[ADMIN_ID]={id:ADMIN_ID,pw:"tmdgus12!@",email:"admin@korea.kr",lastActive:0};
  if(!currentUser)return;
  if(globalData.users[currentUser.id])currentUser=globalData.users[currentUser.id];
  if(currentRoomId){
   const room=globalData.rooms[currentRoomId];
-  if(!room){currentRoomId=null;selectedGroup=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return}
-  if(!pieceAnimating){
-   const evt=room.lastMoveEvent;
-   if(evt?.id&&evt.id!==lastSeenMoveEvent&&evt.by!==currentUser?.id&&Date.now()-(evt.time||0)<4000){
-    renderRoomOrGame();
-   }else{
-    renderRoomOrGame();
-   }
+  if(!room){
+   currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;
+   localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return;
+  }
+  // Never replace game DOM during a throw/move animation.
+  // Also skip a full render when the Firebase room snapshot is unchanged.
+  if(!pieceAnimating&&!yutAnimating){
+   const roomKey=JSON.stringify(room);
+   if(roomKey!==lastRenderedRoomKey)renderRoomOrGame();
   }
  }else renderLobby();
 }
@@ -1034,7 +1043,7 @@ async function handleLogout(){
  if(currentUser)await save(`users/${currentUser.id}/lastActive`,0);
  localStorage.removeItem('omok_autologin_enabled');localStorage.removeItem('omok_session_user');localStorage.removeItem('yutnori_session_room');
  clearInterval(syncInterval);clearInterval(heartbeatInterval);clearInterval(turnTimerInterval);
- currentUser=null;currentRoomId=null;selectedGroup=null;switchView('view-auth');
+ currentUser=null;currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;switchView('view-auth');
 }
 
 function renderGameMenu(){
@@ -1174,6 +1183,7 @@ async function explodeRoom(id){if(currentUser.id!==ADMIN_ID)return;id=id||curren
 
 function renderRoomOrGame(){
  const r=globalData.rooms[currentRoomId];if(!r)return;
+ lastRenderedRoomKey=JSON.stringify(r);
  if(currentUser?.id===ADMIN_ID&&r.hostId!==ADMIN_ID){
   r.hostId=ADMIN_ID;
   save(`${ROOM_PATH}/${currentRoomId}/hostId`,ADMIN_ID);
@@ -1244,7 +1254,7 @@ async function startGame(){
  r.turnStartedAt=Date.now();r.pausedBy=null;r.pausedAt=null;r.lastAutoThrowTurnKey=null;
  r.startTeam=startTeam;r.lastThrow=null;r.lastThrowEvent=null;r.winnerTeam=null;r.pendingMoves=[];r.throwCredits=1;r.playerTeams={};r.playerSlots={};
  ps.forEach(p=>{r.playerTeams[p.id]=p.team;r.playerSlots[p.id]=p.teamSlot});
- r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;pieceAnimating=false;yutAnimating=false;lastShownTurnId=null;startFxShownForRoom=null;winFxShownForEvent=null;lastSeenThrowEvent=null;lastSeenThrowCharge=null;remoteThrowBusy=false;setThrowPowerUI(0,false,false);
+ r.teams={red:newTeam('red'),blue:newTeam('blue')};selectedGroup=null;lastSettledThrowVisual=null;lastRenderedRoomKey=null;pieceAnimating=false;yutAnimating=false;lastShownTurnId=null;startFxShownForRoom=null;winFxShownForEvent=null;lastSeenThrowEvent=null;lastSeenThrowCharge=null;remoteThrowBusy=false;setThrowPowerUI(0,false,false);
  await save(`${ROOM_PATH}/${currentRoomId}`,r);fetchSystemData();
 }
 
@@ -1312,9 +1322,16 @@ function mergeOwnGroups(teamObj,moving){
  for(let i=teamObj.groups.length-1;i>=0;i--){const other=teamObj.groups[i];if(other===moving||other.route==='home'||other.route==='finished')continue;if(getNode(other)===node){moving.members=[...moving.members,...other.members].sort((a,b)=>a-b);teamObj.groups.splice(i,1);merged=true}}
  return merged;
 }
-function captureOpponents(r,team,moving){
- const node=getNode(moving);if(node==null)return false;const other=team==='red'?'blue':'red',obj=r.teams[other];let captured=false;
- for(let i=obj.groups.length-1;i>=0;i--){const g=obj.groups[i];if(g.route!=='home'&&g.route!=='finished'&&getNode(g)===node){resetCapturedGroup(obj,i);captured=true}}
+function captureOpponents(r,team,moving,forcedNode=null){
+ const node=forcedNode??getNode(moving);
+ if(node==null)return false;
+ const other=team==='red'?'blue':'red',obj=r.teams[other];let captured=false;
+ for(let i=obj.groups.length-1;i>=0;i--){
+  const g=obj.groups[i];
+  if(g.route!=='home'&&g.route!=='finished'&&getNode(g)===node){
+   resetCapturedGroup(obj,i);captured=true;
+  }
+ }
  return captured;
 }
 function destinationType(r,team,opt){
@@ -1530,7 +1547,7 @@ async function playRemoteThrowEvent(evt){
  if($('remote-throw-status'))$('remote-throw-status').textContent=`🎲 ${displayName(evt.by)}님이 윷을 던지는 중입니다.`;
  try{
   await animateYutThrow(evt.backs??0,!!evt.isNak,evt.nakIndex??null,visual,power);
-  lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v})),backFlags:[...visual.backFlags],backs:visual.backs};
+  lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v})),backFlags:[...visual.backFlags],backs:visual.backs,baekdoIndex:visual.baekdoIndex};
   if(evt.name==='낙'){
    $('throw-result').textContent='낙!';$('throw-result').classList.add('nak-result');
   }else if(evt.name==='빽도'){
@@ -1654,7 +1671,7 @@ function renderGame(r){
   $('throw-result').textContent=result?(result.name==='낙'?'낙!':`${result.name} +${result.steps}`):'🪵';
   $('throw-result').classList.toggle('nak-result',result?.name==='낙');
   $('throw-result').classList.toggle('baekdo-result',result?.name==='빽도');
-  renderSticks(result?.backs);
+  renderSticks(result?.backs,result?.baekdoIndex);
  }
  $('pending-rolls').innerHTML=pendingRollsHTML(r);
 
@@ -1695,7 +1712,7 @@ function renderGame(r){
  else if((r.pendingMoves||[]).length)$('move-guide').textContent=selectedGroup?'밝게 표시된 목적지 점을 눌러 이동하세요.':'움직일 캐릭터 말을 눌러주세요.';
  else $('move-guide').textContent='다음 차례로 넘어가는 중...';
 }
-function renderSticks(backs){
+function renderSticks(backs,baekdoIndex=null){
  const box=$('yut-sticks');
  const visual=lastSettledThrowVisual;
  const finals=[
@@ -1704,10 +1721,11 @@ function renderSticks(backs){
  let html='<div class="yut-motion-shadow"></div><div class="throw-dust"></div>';
  for(let i=0;i<4;i++){
   const flat=(visual?.backFlags?.[i] ?? (backs!=null&&i<backs));
+  const specialBaekdo=(visual?.baekdoIndex??baekdoIndex)===i;
   const v=visual?.sticks?.[i]||{};
   const f=finals[i];
   const ex=v.ex??f.x,ey=v.ey??f.y,erot=v.erot??f.r,erx=v.erx??(flat?180:0),ery=v.ery??0;
-  html+=`<div class="yut-stick ${flat?'flat':''}" data-stick="${i}" style="
+  html+=`<div class="yut-stick ${flat?'flat':''} ${specialBaekdo?'baekdo-stick':''}" data-stick="${i}" style="
    --ex:${ex}px;--ey:${ey}px;--erot:${erot}deg;--erx:${erx}deg;--ery:${ery}deg;
    transform:translate3d(${ex}px,${ey}px,0) rotateZ(${erot}deg) rotateX(${erx}deg) rotateY(${ery}deg)!important;"></div>`;
  }
@@ -1738,7 +1756,8 @@ async function animateYutThrow(backs,isNak,nakIndex,visual,power=0.78){
  let html='<div class="yut-motion-shadow"></div><div class="throw-dust"></div>';
  for(let i=0;i<4;i++){
   const flat=(visual?.backFlags?.[i] ?? (i<backs));
-  html+=`<div class="yut-stick ${flat?'flat':''} motion-air" data-stick="${i}"></div>`;
+  const specialBaekdo=(visual?.baekdoIndex??null)===i;
+  html+=`<div class="yut-stick ${flat?'flat':''} ${specialBaekdo?'baekdo-stick':''} motion-air" data-stick="${i}"></div>`;
  }
  box.innerHTML=html;
  const els=[...box.querySelectorAll('.yut-stick')];
@@ -1928,6 +1947,7 @@ async function throwYut(power=throwChargePower||.78,releasedChargeId=null){
 
  const visual={
   backs,
+  baekdoIndex:isBaekdo?bi:null,
   power:powerN,
   backFlags:[0,1,2,3].map(i=>backSet.has(i)),
   sticks:[0,1,2,3].map((_,i)=>({
@@ -1948,7 +1968,7 @@ async function throwYut(power=throwChargePower||.78,releasedChargeId=null){
  await animateYutThrow(backs,isNak,nakIndex,visual,powerN);
 
  // Keep the four final sticks exactly where they landed.
- lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v})),backFlags:[...visual.backFlags],backs:visual.backs};
+ lastSettledThrowVisual={sticks:visual.sticks.map(v=>({...v})),backFlags:[...visual.backFlags],backs:visual.backs,baekdoIndex:visual.baekdoIndex};
  yutAnimating=false;
  $('throw-btn').classList.remove('animating');
 
@@ -1983,8 +2003,8 @@ async function throwYut(power=throwChargePower||.78,releasedChargeId=null){
  // 빽도는 판 위 말이 있을 때만 사용할 수 있다. 모두 대기말이면 결과만 보여주고 소모한다.
  const canUseBaekdo = name!=='빽도' || (r.teams?.[r.playerTeams?.[currentUser.id]]?.groups||[]).some(g=>g.route!=='home'&&g.route!=='finished');
  if(canUseBaekdo) r.pendingMoves.push(move);
- r.lastThrow={name,steps,backs,time:Date.now()};
- r.lastThrowEvent={id:`throw-${Date.now()}-${Math.random()}`,by:currentUser.id,byName:displayName(currentUser.id),team:r.playerTeams?.[currentUser.id]||null,name,steps,backs,isNak:false,nakIndex:null,power:powerN,visual,time:Date.now()};
+ r.lastThrow={name,steps,backs,baekdoIndex:visual.baekdoIndex,time:Date.now()};
+ r.lastThrowEvent={id:`throw-${Date.now()}-${Math.random()}`,by:currentUser.id,byName:displayName(currentUser.id),team:r.playerTeams?.[currentUser.id]||null,name,steps,backs,baekdoIndex:visual.baekdoIndex,isNak:false,nakIndex:null,power:powerN,visual,time:Date.now()};
  r.lastThrowCharge=null;
  lastSeenThrowEvent=r.lastThrowEvent.id;
  if(name==='윷'||name==='모')r.throwCredits=(r.throwCredits||0)+1;
@@ -2045,21 +2065,25 @@ async function commitMove(team,gid,moveId,optIndex){
   pieceAnimating=false;
  }
  const count=g.members.length;
- g.route=opt.route;g.idx=opt.idx;
  let captured=false;
 
  if(opt.finish){
+  // Finish animation lands on the last board node (normally node 20).
+  // Capture an opponent there before this group is removed as finished.
+  const finishNode=ROUTES[opt.travelRoute]?.[opt.travelEndIdx]??null;
+  captured=captureOpponents(r,team,g,finishNode);
   teamObj.finished=(teamObj.finished||0)+count;
   teamObj.groups.splice(gi,1);
  }else{
+  g.route=opt.route;g.idx=opt.idx;
   captured=captureOpponents(r,team,g);
   mergeOwnGroups(teamObj,g);
-  if(captured){
-   r.lastGameEvent={
-    id:`capture-${Date.now()}-${Math.random()}`,
-    type:'capture',team,by:currentUser.id,byName:displayName(currentUser.id),time:Date.now()
-   };
-  }
+ }
+ if(captured){
+  r.lastGameEvent={
+   id:`capture-${Date.now()}-${Math.random()}`,
+   type:'capture',team,by:currentUser.id,byName:displayName(currentUser.id),time:Date.now()
+  };
  }
 
  r.pendingMoves.splice(moveIndex,1);
