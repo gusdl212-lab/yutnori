@@ -483,6 +483,8 @@ button:hover{transform:translateY(-1px);filter:brightness(1.08)}
 }
 
 
+/* ===== v1.18 : 윷 던지기 연속 입력/빽도 변수 오류 수정 ===== */
+/* 빠른 연속 클릭으로 투척 함수가 겹치지 않도록 호출 단위 잠금 적용. */
 /* ===== v1.6 : 윷 던지기 모션 충돌 수정 ===== */
 /* 평상시에는 떨어진 최종 위치를 유지하고, throwing 중에는 keyframes가 transform을 완전히 제어한다. */
 .yut-stick{
@@ -694,7 +696,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 
 
 
-/* ===== v1.17 : 일시정지 상태 유지 / 게임 화면 고정 ===== */
+/* ===== v1.18 : 일시정지 상태 유지 / 게임 화면 고정 ===== */
 .pause-overlay{position:absolute!important;inset:0!important;z-index:500!important;display:grid!important;place-items:center!important;background:rgba(5,9,14,.52)!important;backdrop-filter:blur(2.5px)!important;border-radius:inherit!important;pointer-events:auto!important}
 .pause-overlay.hidden{display:none!important}
 .pause-card{width:min(78%,330px);padding:22px 24px;border-radius:20px;text-align:center;background:rgba(13,20,29,.94);border:2px solid rgba(255,209,102,.72);box-shadow:0 0 38px rgba(0,0,0,.42),0 0 25px rgba(255,209,102,.12);color:#eef4f9}
@@ -790,7 +792,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.17</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.18</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -888,7 +890,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 </div>
 
 <script>
-/* ===== v1.17 : Firebase 실시간 스트림 경로 정합성 수정 + 방 목록 즉시 유지 ===== */
+/* ===== v1.18 : Firebase 실시간 스트림 경로 정합성 수정 + 방 목록 즉시 유지 ===== */
 const FIREBASE_BASE_URL="https://andy-5cb5e-default-rtdb.firebaseio.com/othello_platform";
 const ROOM_PATH="yutnoriRooms";
 const ADMIN_ID="andy212";
@@ -901,6 +903,7 @@ let currentUser=null,currentRoomId=null,globalData={users:{},rooms:{},lobbyChat:
 let realtimeStream=null,realtimeReconnectTimer=null,realtimeRenderTimer=null,realtimeStreamGeneration=0;
 let selectedGroup=null;
 let yutAnimating=false;
+let throwRequestBusy=false;
 let localThrowVisual=null;
 let lastSeenCaptureEvent=null;
 let lastSettledThrowVisual=null;
@@ -2046,6 +2049,16 @@ async function animatePieceTravel(team,gid,opt){
 function selectTeamGroup(team,gid){selectedGroup={team,gid};const r=globalData.rooms[currentRoomId];if(r)renderGame(r)}
 
 async function throwYut(power=throwChargePower||.78,releasedChargeId=null){
+ if(throwRequestBusy)return;
+ throwRequestBusy=true;
+ try{
+  return await throwYutCore(power,releasedChargeId);
+ }finally{
+  throwRequestBusy=false;
+ }
+}
+
+async function throwYutCore(power=throwChargePower||.78,releasedChargeId=null){
  if(yutAnimating||pieceAnimating)return;
  await fetchSystemData();
  const r=globalData.rooms[currentRoomId];
@@ -2061,11 +2074,11 @@ async function throwYut(power=throwChargePower||.78,releasedChargeId=null){
  const isNak=Math.random()<0.025;
  const nakIndex=isNak?Math.floor(Math.random()*4):null;
  const isBaekdo=!isNak&&Math.random()<0.05;
- let backs,name,steps,backSet;
+ let backs,name,steps,backSet,bi=null;
  if(isBaekdo){
   // 빽도는 5% 확률. 한 개의 윷만 뒤집힌 모습으로 보여준다.
   backs=1;name='빽도';steps=-1;
-  const bi=Math.floor(Math.random()*4);backSet=new Set([bi]);
+  bi=Math.floor(Math.random()*4);backSet=new Set([bi]);
  }else{
   backs=[0,1,2,3].filter(()=>Math.random()<.5).length;
   const shuffled=[0,1,2,3].sort(()=>Math.random()-.5);
