@@ -782,7 +782,7 @@ button:active{transform:translateY(1px) scale(.97)!important}
 <body>
 <div class="container">
 <h1>🪵🐰 멀티 윷놀이 놀이터</h1>
-<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.13</span></div>
+<div class="status-bar"><span>🌐 기존 게임 계정 그대로 · 🔴 빨간팀 vs 🔵 파란팀 · 최대 8명 · 자유 팀 이동</span><span style="color:#66fcf1;font-weight:900">Yutnori v1.14</span></div>
 
 <div id="view-auth" class="card auth-box">
  <div id="form-login">
@@ -889,6 +889,7 @@ const MAX_PLAYERS=8;
 const TEAM_CAPACITY=4;
 
 let currentUser=null,currentRoomId=null,globalData={users:{},rooms:{},lobbyChat:[]},syncInterval=null,heartbeatInterval=null;
+let realtimeStream=null,realtimeReconnectTimer=null,realtimeRenderTimer=null,realtimeStreamGeneration=0;
 let selectedGroup=null;
 let yutAnimating=false;
 let localThrowVisual=null;
@@ -949,7 +950,99 @@ const BLUE_CHARS=['🐶','🐼','🐨','🐸'];
 function $(id){return document.getElementById(id)}
 function esc(s){return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
 async function save(path,data){try{const r=await fetch(`${FIREBASE_BASE_URL}/${path}.json`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});return r.ok}catch(e){console.error(e);return false}}
+async function pushChild(path,data){
+ try{
+  const r=await fetch(`${FIREBASE_BASE_URL}/${path}.json`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
+  return r.ok?await r.json():null;
+ }catch(e){console.error(e);return null}
+}
 async function remove(path){try{await fetch(`${FIREBASE_BASE_URL}/${path}.json`,{method:'DELETE'})}catch(e){console.error(e)}}
+function normalizeChatMessages(value){
+ const arr=Array.isArray(value)?value:Object.values(value||{});
+ return arr.filter(m=>m&&typeof m==='object').sort((a,b)=>(a.time||0)-(b.time||0));
+}
+function setRealtimePath(root,path,data){
+ const parts=path.split('/').filter(Boolean);if(!parts.length)return data;
+ let obj=root;
+ for(let i=0;i<parts.length-1;i++){
+  const k=parts[i];
+  if(obj[k]==null||typeof obj[k]!=='object')obj[k]={};
+  obj=obj[k];
+ }
+ const last=parts[parts.length-1];
+ if(data===null)delete obj[last];else obj[last]=data;
+ return root;
+}
+function mergeRealtimePath(root,path,data){
+ const parts=path.split('/').filter(Boolean);if(!parts.length)return data;
+ let obj=root;
+ for(let i=0;i<parts.length;i++){
+  const k=parts[i];
+  if(i===parts.length-1){
+   if(data===null)delete obj[k];
+   else if(data&&typeof data==='object'&&!Array.isArray(data)&&obj[k]&&typeof obj[k]==='object'&&!Array.isArray(obj[k]))Object.assign(obj[k],data);
+   else obj[k]=data;
+  }else{
+   if(obj[k]==null||typeof obj[k]!=='object')obj[k]={};
+   obj=obj[k];
+  }
+ }
+ return root;
+}
+function queueRealtimeRender(){
+ clearTimeout(realtimeRenderTimer);
+ realtimeRenderTimer=setTimeout(()=>{
+  if(!currentUser)return;
+  if(currentRoomId){
+   const room=globalData.rooms?.[currentRoomId];
+   if(!room){currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return;}
+   if(!pieceAnimating&&!yutAnimating){
+    const roomKey=JSON.stringify(room);
+    if(roomKey!==lastRenderedRoomKey)renderRoomOrGame();
+   }
+  }else renderLobby();
+ },25);
+}
+function closeRealtimeStream(){
+ realtimeStreamGeneration++;
+ if(realtimeReconnectTimer){clearTimeout(realtimeReconnectTimer);realtimeReconnectTimer=null}
+ if(realtimeStream){try{realtimeStream.close()}catch(e){}realtimeStream=null}
+}
+function startRealtimeStream(){
+ closeRealtimeStream();
+ if(!currentUser||typeof EventSource==='undefined')return;
+ const generation=realtimeStreamGeneration;
+ const connect=()=>{
+  if(generation!==realtimeStreamGeneration||!currentUser)return;
+  try{
+   const es=new EventSource(`${FIREBASE_BASE_URL}.json`);
+   realtimeStream=es;
+   es.addEventListener('put',evt=>handleRealtimeEvent(evt,false));
+   es.addEventListener('patch',evt=>handleRealtimeEvent(evt,true));
+   es.onerror=()=>{
+    if(generation!==realtimeStreamGeneration)return;
+    try{es.close()}catch(e){}
+    if(realtimeStream===es)realtimeStream=null;
+    clearTimeout(realtimeReconnectTimer);
+    realtimeReconnectTimer=setTimeout(connect,1200);
+   };
+  }catch(e){console.error('실시간 연결 오류',e);realtimeReconnectTimer=setTimeout(connect,1500)}
+ };
+ connect();
+}
+function handleRealtimeEvent(evt,isPatch){
+ try{
+  const payload=JSON.parse(evt.data||'{}');
+  const path=payload.path||'/';
+  if(path==='/')globalData=payload.data||{};
+  else if(isPatch){globalData=mergeRealtimePath(globalData,path,payload.data||{});}
+  else globalData=setRealtimePath(globalData,path,payload.data);
+  globalData.users=globalData.users||{};globalData.rooms=globalData.rooms||{};globalData.lobbyChat=globalData.lobbyChat||[];
+  if(!globalData.users[ADMIN_ID])globalData.users[ADMIN_ID]={id:ADMIN_ID,pw:'tmdgus12!@',email:'admin@korea.kr',lastActive:0};
+  if(currentUser&&globalData.users[currentUser.id])currentUser=globalData.users[currentUser.id];
+  queueRealtimeRender();
+ }catch(e){console.error('실시간 데이터 처리 오류',e)}
+}
 function switchView(id){['view-auth','view-lobby','view-room','view-game'].forEach(v=>$(v).classList.add('hidden'));$(id).classList.remove('hidden')}
 function switchAuthMode(m){['form-login','form-signup','form-forgot'].forEach(x=>$(x).classList.add('hidden'));$('form-'+m).classList.remove('hidden')}
 function displayName(id){return id===ADMIN_ID?'관리자':id}
@@ -988,26 +1081,16 @@ async function fetchSystemData(){
  if(!globalData.users[ADMIN_ID])globalData.users[ADMIN_ID]={id:ADMIN_ID,pw:"tmdgus12!@",email:"admin@korea.kr",lastActive:0};
  if(!currentUser)return;
  if(globalData.users[currentUser.id])currentUser=globalData.users[currentUser.id];
- if(currentRoomId){
-  const room=globalData.rooms[currentRoomId];
-  if(!room){
-   currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;
-   localStorage.removeItem('yutnori_session_room');switchView('view-lobby');renderLobby();return;
-  }
-  // Never replace game DOM during a throw/move animation.
-  // Also skip a full render when the Firebase room snapshot is unchanged.
-  if(!pieceAnimating&&!yutAnimating){
-   const roomKey=JSON.stringify(room);
-   if(roomKey!==lastRenderedRoomKey)renderRoomOrGame();
-  }
- }else renderLobby();
+ queueRealtimeRender();
 }
 function startSync(){
  clearInterval(syncInterval);clearInterval(heartbeatInterval);clearInterval(turnTimerInterval);
- syncInterval=setInterval(fetchSystemData,1400);
+ clearTimeout(realtimeReconnectTimer);clearTimeout(realtimeRenderTimer);
+ syncInterval=null;
  turnTimerInterval=setInterval(updateTurnClock,250);
  heartbeatInterval=setInterval(()=>currentUser&&save(`users/${currentUser.id}/lastActive`,Date.now()),3000);
- save(`users/${currentUser.id}/lastActive`,Date.now());fetchSystemData();
+ save(`users/${currentUser.id}/lastActive`,Date.now());
+ fetchSystemData().then(()=>startRealtimeStream());
 }
 async function handleSignup(){
  const id=$('signup-id').value.trim(),pw=$('signup-pw').value.trim(),pw2=$('signup-pw-confirm').value.trim(),email=$('signup-email').value.trim();
@@ -1043,7 +1126,7 @@ async function handleLogout(){
  if(currentUser)await save(`users/${currentUser.id}/lastActive`,0);
  localStorage.removeItem('omok_autologin_enabled');localStorage.removeItem('omok_session_user');localStorage.removeItem('yutnori_session_room');
  clearInterval(syncInterval);clearInterval(heartbeatInterval);clearInterval(turnTimerInterval);
- currentUser=null;currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;switchView('view-auth');
+ closeRealtimeStream();currentUser=null;currentRoomId=null;selectedGroup=null;lastRenderedRoomKey=null;switchView('view-auth');
 }
 
 function renderGameMenu(){
@@ -1070,7 +1153,7 @@ function renderLobby(){
  const now=Date.now(),online=Object.values(globalData.users||{}).filter(u=>u&&u.id&&now-(u.lastActive||0)<ONLINE_GRACE_MS);
  $('online-count').textContent=online.length;
  $('online-user-list').innerHTML=online.map(u=>`<div class="user-item"><span>${u.id===ADMIN_ID?'👑 ':''}${esc(displayName(u.id))}</span><span style="color:#66fcf1;font-size:10px">접속중</span></div>`).join('');
- const chats=(globalData.lobbyChat||[]).filter(m=>now-(m.time||0)<ONE_HOUR_MS).slice(-30);
+ const chats=normalizeChatMessages(globalData.lobbyChat).filter(m=>now-(m.time||0)<ONE_HOUR_MS).slice(-30);
  $('lobby-chat-msgs').innerHTML=chats.map(m=>`<div class="chat-msg"><span class="sender">${esc(displayName(m.sender))}:</span> ${esc(m.text)}</div>`).join('');
  const rooms=globalData.rooms||{},ids=Object.keys(rooms);
  $('room-list-box').innerHTML=ids.length?ids.map(id=>{
@@ -1079,7 +1162,7 @@ function renderLobby(){
  }).join(''):'<div style="text-align:center;color:#888;padding:25px">개설된 방이 없습니다.<br>첫 팀전 방을 만들어보세요!</div>';
 }
 async function deleteUserAccount(id){if(currentUser.id!==ADMIN_ID||id===ADMIN_ID)return;if(confirm(`'${id}' 계정을 삭제할까요?`)){await remove('users/'+id);fetchSystemData()}}
-async function sendLobbyChat(){const i=$('lobby-chat-input'),t=i.value.trim();if(!t)return;i.value='';const arr=globalData.lobbyChat||[];arr.push({sender:currentUser.id,text:t,time:Date.now()});await save('lobbyChat',arr.slice(-100));fetchSystemData()}
+async function sendLobbyChat(){const i=$('lobby-chat-input'),t=i.value.trim();if(!t||!currentUser)return;i.value='';await pushChild('lobbyChat',{sender:currentUser.id,text:t,time:Date.now()});}
 
 function normalizedPlayers(r){
  const arr=Object.values(r.players||{}).filter(Boolean).sort((a,b)=>(a.joinedAt||a.seat||0)-(b.joinedAt||b.seat||0));
@@ -1107,7 +1190,7 @@ async function createRoom(){
  let name=prompt('윷놀이 팀전 방 이름을 입력하세요:',currentUser.id===ADMIN_ID?'관리자의 윷놀이방':`${currentUser.id}의 윷놀이방`);
  if(!name)return;
  await fetchSystemData();if(globalData.rooms[name])return alert('이미 존재하는 방입니다.');
- const room={hostId:currentUser.id,status:'waiting',createdAt:Date.now(),players:{[currentUser.id]:{id:currentUser.id,team:'red',teamSlot:0,joinedAt:Date.now()}},chat:[]};
+ const room={hostId:currentUser.id,status:'waiting',createdAt:Date.now(),players:{[currentUser.id]:{id:currentUser.id,team:'red',teamSlot:0,joinedAt:Date.now()}},chat:{}};
  await save(`${ROOM_PATH}/${name}`,room);currentRoomId=name;localStorage.setItem('yutnori_session_room',name);fetchSystemData();
 }
 async function joinRoom(id){
@@ -1219,14 +1302,12 @@ function renderRoom(r){
  $('host-controls').classList.toggle('hidden',currentUser.id!==r.hostId||ps.length<2||!hasRed||!hasBlue);
  renderChat(r.chat||[],'room-chat-msgs');
 }
-function renderChat(arr,id){$(id).innerHTML=arr.slice(-40).map(m=>`<div class="chat-msg"><span class="sender">${esc(displayName(m.sender))}:</span> ${esc(m.text)}</div>`).join('');$(id).scrollTop=$(id).scrollHeight}
+function renderChat(arr,id){const el=$(id);if(!el)return;const chats=normalizeChatMessages(arr).slice(-40);const wasNearBottom=el.scrollHeight-el.scrollTop-el.clientHeight<45;el.innerHTML=chats.map(m=>`<div class="chat-msg"><span class="sender">${esc(displayName(m.sender))}:</span> ${esc(m.text)}</div>`).join('');if(wasNearBottom||el.dataset.chatInit!=='1'){el.scrollTop=el.scrollHeight;el.dataset.chatInit='1'}}
 async function sendRoomChat(){return sendGameLikeChat('room-chat-input')}
 async function sendGameChat(){return sendGameLikeChat('game-chat-input')}
 async function sendGameLikeChat(inputId){
- const i=$(inputId),t=i.value.trim();if(!t||!currentRoomId)return;i.value='';
- await fetchSystemData();const r=globalData.rooms[currentRoomId];if(!r)return;
- r.chat=r.chat||[];r.chat.push({sender:currentUser.id,text:t,time:Date.now()});
- await save(`${ROOM_PATH}/${currentRoomId}/chat`,r.chat.slice(-100));fetchSystemData();
+ const i=$(inputId),t=i.value.trim();if(!t||!currentRoomId||!currentUser)return;i.value='';
+ await pushChild(`${ROOM_PATH}/${currentRoomId}/chat`,{sender:currentUser.id,text:t,time:Date.now()});
 }
 
 function newTeam(team){return {finished:0,groups:[0,1,2,3].map(i=>({gid:`${team}-${i}`,members:[i],route:'home',idx:0}))}}
